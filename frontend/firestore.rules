@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Workflows privados
+    match /workflows/{workflowId} {
+      allow read: if isAuthenticated() && 
+                     isOwner(resource.data.userId);
+      
+      allow create: if isAuthenticated() && 
+                       isOwner(request.resource.data.userId);
+      
+      allow update, delete: if isAuthenticated() && 
+                              isOwner(resource.data.userId);
+    }
+    
+    // Workflows públicos (galería)
+    match /publicWorkflows/{workflowId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAuthenticated() && 
+                       isOwner(request.resource.data.userId) &&
+                       request.resource.data.isPublic == true;
+      
+      allow update, delete: if isAuthenticated() && 
+                              isOwner(resource.data.userId);
+    }
+    
+    // Configuraciones de usuario
+    match /userSettings/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Historial de ejecuciones
+    match /executionHistory/{executionId} {
+      allow read: if isAuthenticated() && 
+                     isOwner(resource.data.userId);
+      
+      allow create: if isAuthenticated() && 
+                       isOwner(request.resource.data.userId);
+      
+      // Solo lectura, no se permite modificar historial
+      allow update, delete: if false;
+    }
+    
+    // Telemetría de diagnósticos (anónima)
+    match /diagnostics/{diagnosticId} {
+      allow create: if isAuthenticated();
+      allow read: if false; // Solo admin via console
+    }
+  }
+}

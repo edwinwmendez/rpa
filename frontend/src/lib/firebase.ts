@@ -1,18 +1,25 @@
 // Firebase Configuration
-// Reemplaza estos valores con los de tu proyecto Firebase
+// Lee configuración desde variables de entorno (.env)
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "tu-proyecto.firebaseapp.com",
-  projectId: "tu-proyecto",
-  storageBucket: "tu-proyecto.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
+
+// Validar que las variables estén configuradas
+if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'your_api_key_here') {
+  console.error('⚠️ Firebase no está configurado correctamente');
+  console.error('Por favor, configura tu archivo .env con las credenciales de Firebase');
+  console.error('Copia .env.example a .env y reemplaza los valores');
+}
 
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);

@@ -1,38 +1,18 @@
 # Agente RPA - Windows 7 (Ligero)
-# Servidor Flask SIN automatización web
+# Sin automatización web (Playwright) - Solo Desktop + Excel
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import sys
 import platform
 import logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
-
-CORS(app, origins=[
-    'http://localhost:3000',
-    'https://*.web.app',
-    'https://*.firebaseapp.com'
-])
-
-# Importar solo motores disponibles en Win7
-from engine.desktop import DesktopEngine
-from engine.excel import ExcelEngine
-from engine.executor import WorkflowExecutor
-
-desktop_engine = DesktopEngine()
-excel_engine = ExcelEngine()
-# NO web_engine - no disponible en Win7
-executor = WorkflowExecutor(desktop_engine, None, excel_engine)
+CORS(app, origins=['http://localhost:3000', 'https://*.web.app', 'https://*.firebaseapp.com'])
 
 @app.route('/health', methods=['GET'])
 def health():
-    """Health check - indica que web NO está disponible"""
     return jsonify({
         'status': 'connected',
         'version': '1.0.0-win7',
@@ -40,10 +20,23 @@ def health():
         'python': platform.python_version(),
         'features': {
             'desktop': True,
-            'web': False,  # NO disponible en Win7
+            'web': False,  # NO Playwright en Win7
             'excel': True
         }
     })
 
 @app.route('/execute', methods=['POST'])
 def execute_workflow():
+    workflow = request.json
+    logging.info(f"Ejecutando workflow: {workflow.get('name', 'Sin nombre')}")
+    # TODO: Implementar executor
+    return jsonify({'status': 'success'})
+
+if __name__ == '__main__':
+    print("="*60)
+    print("🤖 Agente RPA - Windows 7 (Ligero)")
+    print(f"Python: {platform.python_version()}")
+    print("⚠️  Automatización web NO disponible en esta versión")
+    print("Servidor: http://localhost:5000")
+    print("="*60)
+    app.run(host='127.0.0.1', port=5000, debug=True)
