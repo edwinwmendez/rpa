@@ -1,8 +1,11 @@
-Flask==3.0.0
-Flask-CORS==4.0.0
+# Agente Windows 10/11 - Python 3.10+
+# Versiones más recientes compatibles - Diciembre 2025
+
+Flask==3.1.0
+Flask-CORS==5.0.0
 pywinauto==0.6.8
-playwright==1.40.0
-pandas==2.1.4
-openpyxl==3.1.2
-pywin32==306
-requests==2.31.0
+playwright==1.49.0
+pandas==2.2.3
+openpyxl==3.1.5
+pywin32==308
+requests==2.32.3

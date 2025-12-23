@@ -1,17 +1,20 @@
 // Diagnostic Page
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { agentClient } from '../lib/agentClient';
 import { ArrowLeft, Download } from 'lucide-react';
 
+interface DiagnosticResult {
+  error?: string;
+  [key: string]: unknown;
+}
+
 export default function Diagnostic() {
-  const [diagnostic, setDiagnostic] = useState<any>(null);
+  const navigate = useNavigate();
+  const [diagnostic, setDiagnostic] = useState<DiagnosticResult | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    runDiagnostic();
-  }, []);
-
-  const runDiagnostic = async () => {
+  const runDiagnostic = useCallback(async () => {
     setLoading(true);
     try {
       const result = await agentClient.runDiagnostic();
@@ -20,12 +23,16 @@ export default function Diagnostic() {
       setDiagnostic({ error: 'No se pudo conectar con el agente' });
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    runDiagnostic();
+  }, [runDiagnostic]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <button
-        onClick={() => window.history.back()}
+        onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />

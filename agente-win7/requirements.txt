@@ -1,9 +1,11 @@
-# Agente Windows 7 - Python 3.8 compatible
-# NO incluye Playwright (no disponible en Win7)
+# Agente Windows 7 - Python 3.8 ÚNICAMENTE
+# Versiones MÁXIMAS compatibles con Python 3.8 y Windows 7
+# NO incluye Playwright (no soportado en Win7)
+# IMPORTANTE: NO actualizar a versiones mayores - incompatibles con Win7
 
-Flask==2.3.3
-Flask-CORS==4.0.0
-pywinauto==0.6.8
-pandas==1.3.5
-openpyxl==3.0.10
-pywin32==305
+Flask==2.3.3  # Última versión compatible con Python 3.8
+Flask-CORS==4.0.0  # Compatible con Flask 2.3.x
+pywinauto==0.6.8  # Versión estable para Win7
+pandas==1.5.3  # Última compatible con Python 3.8
+openpyxl==3.0.10  # Compatible con pandas 1.5.x
+pywin32==305  # Última versión estable para Win7

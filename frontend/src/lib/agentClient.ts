@@ -44,14 +44,15 @@ class AgentClient {
   }
 
   // Ejecutar workflow
-  async executeWorkflow(workflow: any): Promise<WorkflowExecutionResult> {
+  async executeWorkflow(workflow: Record<string, unknown>): Promise<WorkflowExecutionResult> {
     try {
       const response = await this.client.post('/execute', workflow);
-      return response.data;
-    } catch (error: any) {
+      return response.data as WorkflowExecutionResult;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al ejecutar workflow';
       return {
         status: 'error',
-        error: error.message || 'Error al ejecutar workflow'
+        error: message
       };
     }
   }
@@ -72,10 +73,10 @@ class AgentClient {
   }
 
   // Ejecutar diagnóstico del sistema
-  async runDiagnostic(): Promise<any> {
+  async runDiagnostic(): Promise<Record<string, unknown>> {
     try {
       const response = await this.client.get('/diagnostic');
-      return response.data;
+      return response.data as Record<string, unknown>;
     } catch (error) {
       throw new Error('No se pudo conectar con el agente');
     }

@@ -5,6 +5,7 @@ import { agentClient, AgentStatus } from '../lib/agentClient';
 interface AgentStore {
   status: AgentStatus;
   isChecking: boolean;
+  intervalId: NodeJS.Timeout | null;
   checkStatus: () => Promise<void>;
   startAutoCheck: () => void;
   stopAutoCheck: () => void;
@@ -13,6 +14,7 @@ interface AgentStore {
 export const useAgentStore = create<AgentStore>((set, get) => ({
   status: { status: 'disconnected' },
   isChecking: false,
+  intervalId: null,
 
   checkStatus: async () => {
     set({ isChecking: true });
@@ -21,21 +23,25 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   },
 
   startAutoCheck: () => {
-    // Verificar estado cada 30 segundos
-    const interval = setInterval(async () => {
-      await get().checkStatus();
-    }, 30000);
+    // Detener cualquier verificación previa
+    get().stopAutoCheck();
 
     // Verificar inmediatamente
     get().checkStatus();
 
-    // Guardar interval ID para poder detenerlo
-    (window as any).__agentCheckInterval = interval;
+    // Verificar estado cada 30 segundos
+    const interval = setInterval(() => {
+      get().checkStatus();
+    }, 30000);
+
+    set({ intervalId: interval });
   },
 
   stopAutoCheck: () => {
-    if ((window as any).__agentCheckInterval) {
-      clearInterval((window as any).__agentCheckInterval);
+    const { intervalId } = get();
+    if (intervalId) {
+      clearInterval(intervalId);
+      set({ intervalId: null });
     }
   }
 }));

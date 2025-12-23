@@ -1,15 +1,17 @@
 // Agent Status Banner - Banner de estado del agente
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAgentStore } from '../stores/agentStore';
 import { AlertCircle, CheckCircle, Wrench } from 'lucide-react';
 
 export function AgentStatusBanner() {
+  const navigate = useNavigate();
   const { status, checkStatus, startAutoCheck, stopAutoCheck } = useAgentStore();
 
   useEffect(() => {
     startAutoCheck();
     return () => stopAutoCheck();
-  }, []);
+  }, [startAutoCheck, stopAutoCheck]);
 
   const isConnected = status.status === 'connected';
 
@@ -53,7 +55,7 @@ export function AgentStatusBanner() {
       {!isConnected && (
         <div className="flex gap-2">
           <button
-            onClick={() => window.location.href = '/diagnostic'}
+            onClick={() => navigate('/diagnostic')}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
           >
             <Wrench className="w-4 h-4" />
