@@ -1,4 +1,11 @@
-// Loop Node - Nodo especial para acciones Loop con lista compacta
+/**
+ * Loop Node - Nodo especial para acciones Loop con lista compacta
+ *
+ * Arquitectura de Selección:
+ * - Este componente maneja su propia apariencia (border, shadow) usando la prop `selected`
+ * - React Flow maneja el ring azul exterior mediante CSS (ver index.css)
+ * - Sin uso de !important - especificidad correcta de Tailwind
+ */
 import { memo, useMemo } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 import { RefreshCw } from 'lucide-react';
@@ -16,7 +23,7 @@ export const LoopNode = memo(function LoopNode({ data, selected, id }: LoopNodeP
   const { getNodes, getEdges } = useReactFlow();
   const config = data.config as any;
   const loopMode = config.loopMode || 'excel';
-  
+
   const modeLabels: Record<string, string> = {
     excel: 'Por Excel/CSV',
     count: 'Repetir N veces',
@@ -33,10 +40,10 @@ export const LoopNode = memo(function LoopNode({ data, selected, id }: LoopNodeP
   // Ordenar nodos según las conexiones
   const childNodes = useMemo(() => {
     if (childNodesUnordered.length === 0) return [];
-    
+
     // Crear un mapa de nodos para acceso rápido
     const nodeMap = new Map(childNodesUnordered.map(n => [n.id, n]));
-    
+
     // Crear un mapa de conexiones (source -> target)
     const connections = new Map<string, string>();
     allEdges.forEach(edge => {
@@ -45,35 +52,35 @@ export const LoopNode = memo(function LoopNode({ data, selected, id }: LoopNodeP
         connections.set(edge.source, edge.target);
       }
     });
-    
+
     // Encontrar el nodo inicial (el que no tiene ningún edge apuntando a él desde otro nodo del loop)
     const targetsSet = new Set(connections.values());
     const startNode = childNodesUnordered.find(n => !targetsSet.has(n.id));
-    
+
     if (!startNode) {
       // Si no hay un nodo inicial claro, devolver los nodos sin ordenar
       return childNodesUnordered;
     }
-    
+
     // Construir la lista ordenada siguiendo las conexiones
     const ordered = [];
     let current: typeof startNode | undefined = startNode;
     const visited = new Set<string>();
-    
+
     while (current && !visited.has(current.id)) {
       ordered.push(current);
       visited.add(current.id);
       const nextId = connections.get(current.id);
       current = nextId ? nodeMap.get(nextId) : undefined;
     }
-    
+
     // Agregar nodos que no están conectados (por si acaso)
     childNodesUnordered.forEach(node => {
       if (!visited.has(node.id)) {
         ordered.push(node);
       }
     });
-    
+
     return ordered;
   }, [childNodesUnordered, allEdges]);
 
@@ -109,15 +116,27 @@ export const LoopNode = memo(function LoopNode({ data, selected, id }: LoopNodeP
   return (
     <div
       className={cn(
-        'rounded-lg border-2 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-lg transition-all',
-        selected ? 'border-indigo-500 shadow-xl ring-2 ring-indigo-200' : 'border-indigo-200',
+        'rounded-lg border-2 bg-gradient-to-br from-indigo-50 to-purple-50 transition-all relative',
+        selected
+          ? 'border-blue-500'
+          : 'border-indigo-200 shadow-lg hover:border-indigo-300'
       )}
       style={{
         width: '350px',
         minHeight: '120px',
       }}
     >
-      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-indigo-500" />
+      <Handle 
+        type="target" 
+        position={Position.Top} 
+        className="connection-handle connection-handle-target connection-handle-indigo"
+        style={{ 
+          top: -6,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10
+        }}
+      />
       
       {/* Header del Loop */}
       <div className="flex items-center gap-2 p-3 bg-indigo-100 border-b border-indigo-200 rounded-t-lg">
@@ -207,7 +226,17 @@ export const LoopNode = memo(function LoopNode({ data, selected, id }: LoopNodeP
         </div>
       </div>
       
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-indigo-500" />
+      <Handle 
+        type="source" 
+        position={Position.Bottom} 
+        className="connection-handle connection-handle-source connection-handle-indigo"
+        style={{ 
+          bottom: -6,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10
+        }}
+      />
     </div>
   );
 });

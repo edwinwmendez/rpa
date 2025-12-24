@@ -6,20 +6,18 @@ import {
   useNodesState,
   useEdgesState,
   Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
   Panel,
   MarkerType,
 } from '@xyflow/react';
 import type { Node, Edge, Connection } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
 import { LoopCanvasEditor } from './LoopCanvasEditor';
 import type { ActionNodeData } from '../../types/workflow';
 import { ActionPalette } from './ActionPalette';
 import type { ActionTemplate } from './ActionPalette';
 import { Button } from '../ui/button';
-import { Save, Play, Trash2 } from 'lucide-react';
+import { Save, Play, Trash2, Copy, Clipboard, Undo2, Redo2, CopyPlus, MousePointer2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useWorkflowsStore } from '../../stores/workflowsStore';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -28,6 +26,7 @@ import { useToast } from '../ui/toast';
 import { ActionNode } from './ActionNode';
 import { LoopNode } from './LoopNode';
 import { IfElseNode } from './IfElseNode';
+import { useWorkflowHistory } from '../../hooks/useWorkflowHistory';
 
 // Definido a nivel de módulo - NUNCA se recrea
 const NODE_TYPES = {
@@ -73,9 +72,21 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [draggedAction, setDraggedAction] = useState<ActionTemplate | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isPropertiesPanelVisible, setIsPropertiesPanelVisible] = useState(false);
+  // Estado para controlar selección múltiple (box selection)
+  const [isSelectionModeActive, setIsSelectionModeActive] = useState(false);
   
   // Estado para controlar navegación en loops anidados
   const [loopNavigationStack, setLoopNavigationStack] = useState<string[]>([]);
+
+  // Estado para clipboard (copy/paste)
+  const [clipboard, setClipboard] = useState<{ nodes: TypedNode[]; edges: Edge[] } | null>(null);
+
+  // Hook de historial (Undo/Redo)
+  const { saveState, undo, redo, canUndo, canRedo, resetHistory } = useWorkflowHistory(
+    nodes,
+    edges
+  );
 
   // Cargar archivos Excel guardados en el workflow (si existen)
   useEffect(() => {
@@ -90,11 +101,35 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
     };
   }, [currentWorkflow]);
 
+  // Guardar estado en historial cuando cambian nodos o edges (con debounce)
+  useEffect(() => {
+    // No guardar si es la carga inicial
+    if (nodes.length === 0 && edges.length === 0) return;
+    
+    const timeoutId = setTimeout(() => {
+      saveState(nodes, edges);
+    }, 500); // Debounce de 500ms
+    
+    return () => clearTimeout(timeoutId);
+  }, [nodes, edges, saveState]);
+
   // Cargar workflow cuando cambia
   useEffect(() => {
     if (currentWorkflow) {
-      setNodes((currentWorkflow.nodes as TypedNode[]) || []);
-      setEdges(currentWorkflow.edges || []);
+      const workflowNodes = (currentWorkflow.nodes as TypedNode[]) || [];
+      const workflowEdges = currentWorkflow.edges || [];
+      
+      setNodes(workflowNodes);
+      setEdges(workflowEdges);
+      resetHistory(workflowNodes, workflowEdges);
+      
+      // Ajustar vista solo cuando se carga un workflow existente (con nodos)
+      if (reactFlowInstance && workflowNodes.length > 0) {
+        // Usar setTimeout para asegurar que los nodos se hayan renderizado
+        setTimeout(() => {
+          reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+        }, 100);
+      }
       
       // Cargar archivos Excel guardados en el workflow
       if (currentWorkflow.excelFiles && currentWorkflow.excelFiles.length > 0) {
@@ -129,8 +164,9 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
       }
     } else {
       clearFiles();
+      resetHistory([], []);
     }
-  }, [currentWorkflow, setNodes, setEdges, clearFiles]);
+  }, [currentWorkflow, setNodes, setEdges, clearFiles, reactFlowInstance, resetHistory]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -321,9 +357,34 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
   }, []);
 
   const handleDeleteSelected = useCallback(() => {
+    const nodesToDelete = nodes.filter((node) => node.selected);
+    const edgesToDelete = edges.filter((edge) => edge.selected);
+    
+    if (nodesToDelete.length === 0 && edgesToDelete.length === 0) return;
+    
     setNodes((nds) => nds.filter((node) => !node.selected));
-    setEdges((eds) => eds.filter((edge) => !edge.selected));
-  }, [setNodes, setEdges]);
+    setEdges((eds) => {
+      // Eliminar edges seleccionados y edges conectados a nodos eliminados
+      const nodeIdsToDelete = new Set(nodesToDelete.map(n => n.id));
+      return eds.filter((edge) => 
+        !edge.selected && 
+        !nodeIdsToDelete.has(edge.source) && 
+        !nodeIdsToDelete.has(edge.target)
+      );
+    });
+    
+    saveState(
+      nodes.filter((node) => !node.selected),
+      edges.filter((edge) => {
+        const nodeIdsToDelete = new Set(nodesToDelete.map(n => n.id));
+        return !edge.selected && 
+               !nodeIdsToDelete.has(edge.source) && 
+               !nodeIdsToDelete.has(edge.target);
+      })
+    );
+    
+    showToast(`${nodesToDelete.length} nodo(s) y ${edgesToDelete.length} conexión(es) eliminados`, 'success');
+  }, [setNodes, setEdges, nodes, edges, saveState, showToast]);
 
   const handleSave = useCallback(() => {
     if (onSave) {
@@ -333,10 +394,17 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
 
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: TypedNode) => {
     setSelectedNodeId(node.id);
+    setIsPropertiesPanelVisible(true);
   }, []);
 
   const handlePaneClick = useCallback(() => {
     setSelectedNodeId(null);
+    setIsPropertiesPanelVisible(false);
+  }, []);
+
+  const handleClosePropertiesPanel = useCallback(() => {
+    setSelectedNodeId(null);
+    setIsPropertiesPanelVisible(false);
   }, []);
 
   const handleConfigUpdate = useCallback((nodeId: string, config: ActionNodeData['config']) => {
@@ -347,13 +415,267 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
           : node
       )
     );
-  }, [setNodes]);
+    // Guardar estado después de actualizar configuración
+    setTimeout(() => {
+      const updatedNodes = nodes.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, config } }
+          : node
+      );
+      saveState(updatedNodes, edges);
+    }, 0);
+  }, [setNodes, nodes, edges, saveState]);
+
+  // Handler para Undo
+  const handleUndo = useCallback(() => {
+    const previousState = undo();
+    if (previousState) {
+      setNodes(previousState.nodes as TypedNode[]);
+      setEdges(previousState.edges);
+      showToast('Cambio deshecho', 'info');
+    }
+  }, [undo, setNodes, setEdges, showToast]);
+
+  // Handler para Redo
+  const handleRedo = useCallback(() => {
+    const nextState = redo();
+    if (nextState) {
+      setNodes(nextState.nodes as TypedNode[]);
+      setEdges(nextState.edges);
+      showToast('Cambio rehecho', 'info');
+    }
+  }, [redo, setNodes, setEdges, showToast]);
+
+  // Handler para Copy (copiar nodos seleccionados)
+  const handleCopy = useCallback(() => {
+    const selectedNodes = nodes.filter((node) => node.selected);
+    if (selectedNodes.length === 0) {
+      showToast('No hay nodos seleccionados para copiar', 'warning');
+      return;
+    }
+
+    // Obtener edges conectados a los nodos seleccionados
+    const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+    const connectedEdges = edges.filter(
+      (edge) => selectedNodeIds.has(edge.source) && selectedNodeIds.has(edge.target)
+    );
+
+    setClipboard({ nodes: selectedNodes, edges: connectedEdges });
+    showToast(`${selectedNodes.length} nodo(s) copiado(s)`, 'success');
+  }, [nodes, edges, showToast]);
+
+  // Handler para Paste (pegar nodos copiados)
+  const handlePaste = useCallback(() => {
+    if (!clipboard || clipboard.nodes.length === 0) {
+      showToast('No hay nada en el portapapeles', 'warning');
+      return;
+    }
+
+    if (!reactFlowInstance) return;
+
+    // Calcular offset para pegar (desplazar un poco hacia abajo y derecha)
+    const offset = { x: 50, y: 50 };
+    
+    // Crear nuevos nodos con IDs únicos y posiciones desplazadas
+    const nodeIdMap = new Map<string, string>();
+    const newNodes = clipboard.nodes.map((node) => {
+      const newId = `${node.data.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      nodeIdMap.set(node.id, newId);
+      
+      return {
+        ...node,
+        id: newId,
+        position: {
+          x: node.position.x + offset.x,
+          y: node.position.y + offset.y,
+        },
+        selected: false, // Deseleccionar al pegar
+      } as TypedNode;
+    });
+
+    // Crear nuevos edges con IDs actualizados
+    const newEdges = clipboard.edges.map((edge) => {
+      const newSource = nodeIdMap.get(edge.source) || edge.source;
+      const newTarget = nodeIdMap.get(edge.target) || edge.target;
+      
+      return {
+        ...edge,
+        id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        source: newSource,
+        target: newTarget,
+        selected: false,
+      };
+    });
+
+    setNodes((nds) => [...nds, ...newNodes]);
+    setEdges((eds) => [...eds, ...newEdges]);
+    
+    saveState([...nodes, ...newNodes], [...edges, ...newEdges]);
+    showToast(`${newNodes.length} nodo(s) pegado(s)`, 'success');
+  }, [clipboard, reactFlowInstance, setNodes, setEdges, nodes, edges, saveState, showToast]);
+
+  // Handler para Duplicar nodo seleccionado
+  const handleDuplicate = useCallback(() => {
+    const selectedNodes = nodes.filter((node) => node.selected);
+    if (selectedNodes.length === 0) {
+      showToast('Selecciona un nodo para duplicar', 'warning');
+      return;
+    }
+
+    if (!reactFlowInstance) return;
+
+    const offset = { x: 50, y: 50 };
+    const nodeIdMap = new Map<string, string>();
+    
+    const newNodes = selectedNodes.map((node) => {
+      const newId = `${node.data.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      nodeIdMap.set(node.id, newId);
+      
+      return {
+        ...node,
+        id: newId,
+        position: {
+          x: node.position.x + offset.x,
+          y: node.position.y + offset.y,
+        },
+        selected: false,
+      } as TypedNode;
+    });
+
+    // Duplicar edges conectados a los nodos seleccionados
+    const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+    const connectedEdges = edges.filter(
+      (edge) => selectedNodeIds.has(edge.source) && selectedNodeIds.has(edge.target)
+    );
+    
+    const newEdges = connectedEdges.map((edge) => {
+      const newSource = nodeIdMap.get(edge.source) || edge.source;
+      const newTarget = nodeIdMap.get(edge.target) || edge.target;
+      
+      return {
+        ...edge,
+        id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        source: newSource,
+        target: newTarget,
+        selected: false,
+      };
+    });
+
+    setNodes((nds) => [...nds, ...newNodes]);
+    setEdges((eds) => [...eds, ...newEdges]);
+    
+    saveState([...nodes, ...newNodes], [...edges, ...newEdges]);
+    showToast(`${newNodes.length} nodo(s) duplicado(s)`, 'success');
+  }, [nodes, edges, reactFlowInstance, setNodes, setEdges, saveState, showToast]);
+
+  // Handler para Seleccionar Todos (Ctrl+A)
+  const handleSelectAll = useCallback(() => {
+    setNodes((nds) => nds.map((node) => ({ ...node, selected: true })));
+    setEdges((eds) => eds.map((edge) => ({ ...edge, selected: true })));
+  }, [setNodes, setEdges]);
+
+  // Handler para atajos de teclado
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignorar si está escribiendo en un input/textarea
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      // Ctrl+Z o Cmd+Z: Undo
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        handleUndo();
+        return;
+      }
+
+      // Ctrl+Shift+Z o Cmd+Shift+Z: Redo
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
+        event.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      // Ctrl+Y: Redo (alternativo)
+      if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+        event.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      // Ctrl+C o Cmd+C: Copy
+      if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+        event.preventDefault();
+        handleCopy();
+        return;
+      }
+
+      // Ctrl+V o Cmd+V: Paste
+      if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+        event.preventDefault();
+        handlePaste();
+        return;
+      }
+
+      // Ctrl+D o Cmd+D: Duplicate
+      if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+        event.preventDefault();
+        handleDuplicate();
+        return;
+      }
+
+      // Ctrl+A o Cmd+A: Select All
+      if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+        event.preventDefault();
+        handleSelectAll();
+        return;
+      }
+
+      // Delete o Backspace: Eliminar seleccionados
+      if ((event.key === 'Delete' || event.key === 'Backspace') && 
+          (nodes.some(n => n.selected) || edges.some(e => e.selected))) {
+        event.preventDefault();
+        handleDeleteSelected();
+        return;
+      }
+
+      // Escape: Cerrar panel de propiedades
+      if (event.key === 'Escape') {
+        handleClosePropertiesPanel();
+        return;
+      }
+
+      // Ctrl+S o Cmd+S: Guardar
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        handleSave();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    handleUndo,
+    handleRedo,
+    handleCopy,
+    handlePaste,
+    handleDuplicate,
+    handleSelectAll,
+    handleDeleteSelected,
+    handleClosePropertiesPanel,
+    handleSave,
+    nodes,
+    edges,
+  ]);
 
   // Handler para abrir canvas secundario al hacer doble clic en un Loop
   const handleNodeDoubleClick = useCallback((_event: React.MouseEvent, node: TypedNode) => {
     if (node.type === 'loop') {
       setLoopNavigationStack(prev => [...prev, node.id]);
       setSelectedNodeId(null);
+      setIsPropertiesPanelVisible(false);
     }
   }, []);
 
@@ -470,9 +792,14 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
           nodesConnectable={true}
           elementsSelectable={true}
           selectNodesOnDrag={false}
+          multiSelectionKeyCode={['Control', 'Meta']}
+          panOnDrag={!isSelectionModeActive}
+          panOnScroll={true}
+          selectionOnDrag={isSelectionModeActive}
+          nodeOrigin={[0.5, 0.5]}
+          defaultViewport={{ x: 0, y: 0, zoom: 1 }}
           // Habilitar renderizado de nodos hijos dentro de padres
           nodeExtent={undefined}
-          fitView
           className={cn(
             'bg-gray-50',
             draggedAction && 'cursor-grabbing'
@@ -480,45 +807,80 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
         >
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Controls />
-          <MiniMap
-            nodeColor={(node) => {
-              if (node.type === 'loop') {
-                return '#6366f1'; // Indigo para Loop
-              }
-              if (node.type === 'if-else') {
-                return '#f59e0b'; // Amber para If/Else
-              }
-              if (node.type === 'action') {
-                const data = node.data as ActionNodeData;
-                const colors: Record<string, string> = {
-                  click: '#3b82f6',
-                  type: '#10b981',
-                  navigate: '#8b5cf6',
-                  extract: '#f97316',
-                  'send-email': '#ef4444',
-                  wait: '#6b7280',
-                  loop: '#6366f1',
-                  'if-else': '#f59e0b',
-                  'read-text': '#14b8a6',
-                };
-                return colors[data.type] || '#6b7280';
-              }
-              return '#6b7280';
-            }}
-            className="bg-white border border-gray-200"
-          />
           
-          <Panel position="top-right" className="flex gap-2 m-4">
+          <Panel position="top-right" className="flex gap-2 m-4 flex-wrap">
+            {/* Undo/Redo */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleUndo}
+              disabled={!canUndo}
+              title="Deshacer (Ctrl+Z)"
+            >
+              <Undo2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRedo}
+              disabled={!canRedo}
+              title="Rehacer (Ctrl+Shift+Z)"
+            >
+              <Redo2 className="h-4 w-4" />
+            </Button>
+            
+            {/* Toggle Selección Múltiple */}
+            <Button
+              variant={isSelectionModeActive ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsSelectionModeActive(!isSelectionModeActive)}
+              title={isSelectionModeActive ? "Desactivar selección múltiple (arrastrar)" : "Activar selección múltiple (arrastrar)"}
+            >
+              <MousePointer2 className="h-4 w-4" />
+            </Button>
+            
+            {/* Copy/Paste/Duplicate */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopy}
+              disabled={!nodes.some((n) => n.selected)}
+              title="Copiar (Ctrl+C)"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePaste}
+              disabled={!clipboard || clipboard.nodes.length === 0}
+              title="Pegar (Ctrl+V)"
+            >
+              <Clipboard className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDuplicate}
+              disabled={!nodes.some((n) => n.selected)}
+              title="Duplicar (Ctrl+D)"
+            >
+              <CopyPlus className="h-4 w-4" />
+            </Button>
+            
+            {/* Delete */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleDeleteSelected}
               disabled={!nodes.some((n) => n.selected) && !edges.some((e) => e.selected)}
+              title="Eliminar (Delete)"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Eliminar
+              <Trash2 className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSave}>
+            
+            {/* Save/Execute */}
+            <Button variant="outline" size="sm" onClick={handleSave} title="Guardar (Ctrl+S)">
               <Save className="h-4 w-4 mr-2" />
               Guardar
             </Button>
@@ -531,13 +893,23 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
       </div>
 
       {/* Panel de Propiedades */}
-      <PropertiesPanel
-        selectedNode={selectedNode}
-        nodes={nodes}
-        edges={edges}
-        onUpdate={handleConfigUpdate}
-        onClose={() => setSelectedNodeId(null)}
-      />
+      {isPropertiesPanelVisible && (
+        <PropertiesPanel
+          selectedNode={selectedNode}
+          nodes={nodes}
+          edges={edges}
+          onUpdate={handleConfigUpdate}
+          onClose={handleClosePropertiesPanel}
+          onDuplicate={(nodeId) => {
+            // Seleccionar el nodo y duplicarlo
+            const nodeToDuplicate = nodes.find(n => n.id === nodeId);
+            if (nodeToDuplicate) {
+              setNodes((nds) => nds.map(n => ({ ...n, selected: n.id === nodeId })));
+              setTimeout(() => handleDuplicate(), 0);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

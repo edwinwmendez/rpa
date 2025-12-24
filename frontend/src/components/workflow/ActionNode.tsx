@@ -1,4 +1,11 @@
-// Action Node Component for ReactFlow
+/**
+ * Action Node Component for ReactFlow
+ *
+ * Arquitectura de Selección:
+ * - Este componente maneja su propia apariencia (border, shadow) usando la prop `selected`
+ * - React Flow maneja el ring azul exterior mediante CSS (ver index.css)
+ * - Sin uso de !important - especificidad correcta de Tailwind
+ */
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { MousePointer2, FileText, Globe, Database, Mail, Clock, FileSpreadsheet, RefreshCw, GitBranch } from 'lucide-react';
@@ -47,12 +54,24 @@ export const ActionNode = memo(function ActionNode({ data, selected }: ActionNod
   return (
     <div
       className={cn(
-        'rounded-lg border-2 bg-white shadow-lg transition-all',
-        selected ? 'border-blue-500 shadow-xl' : 'border-gray-200',
-        'min-w-[200px]'
+        'rounded-lg border-2 bg-white transition-all relative min-w-[200px]',
+        // Estilos cuando está seleccionado
+        selected
+          ? 'border-blue-500'
+          : 'border-gray-200 shadow-lg hover:border-gray-300'
       )}
     >
-      <Handle type="target" position={Position.Top} className="w-3 h-3" />
+      <Handle 
+        type="target" 
+        position={Position.Top} 
+        className="connection-handle connection-handle-target"
+        style={{ 
+          top: -6,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10
+        }}
+      />
       
       <div className="flex items-center gap-3 p-4">
         <div className={cn('rounded-lg p-2 text-white', colorClass)}>
@@ -64,7 +83,17 @@ export const ActionNode = memo(function ActionNode({ data, selected }: ActionNod
         </div>
       </div>
       
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
+      <Handle 
+        type="source" 
+        position={Position.Bottom} 
+        className="connection-handle connection-handle-source"
+        style={{ 
+          bottom: -6,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10
+        }}
+      />
     </div>
   );
 });

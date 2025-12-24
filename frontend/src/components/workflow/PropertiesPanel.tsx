@@ -1,7 +1,7 @@
 // Properties Panel - Panel de propiedades dinámico para acciones
 import { useEffect, useState } from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import { X } from 'lucide-react';
+import { X, Copy } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { useToast } from '../ui/toast';
@@ -22,6 +22,7 @@ interface PropertiesPanelProps {
   edges: Edge[];
   onUpdate: (nodeId: string, config: ActionConfig) => void;
   onClose?: () => void;
+  onDuplicate?: (nodeId: string) => void;
 }
 
 export function PropertiesPanel({
@@ -30,6 +31,7 @@ export function PropertiesPanel({
   edges,
   onUpdate,
   onClose,
+  onDuplicate,
 }: PropertiesPanelProps) {
   const [config, setConfig] = useState<ActionConfig | null>(null);
   const { availableVariables, excelData } = useWorkflowVariables(nodes, edges);
@@ -64,6 +66,21 @@ export function PropertiesPanel({
       </div>
     );
   }
+
+  // Mapa de descripciones para cada tipo de acción
+  const actionDescriptions: Record<string, string> = {
+    'click': 'Hacer clic en un elemento',
+    'type': 'Escribir texto en un campo',
+    'navigate': 'Navegar a una URL',
+    'extract': 'Extraer datos de la página',
+    'send-email': 'Enviar un correo electrónico',
+    'wait': 'Esperar un tiempo determinado',
+    'loop': 'Iterar sobre una lista de datos',
+    'if-else': 'Condicional (si/entonces)',
+    'read-text': 'Leer texto de un elemento',
+  };
+
+  const actionDescription = actionDescriptions[config.type] || '';
 
   const renderForm = () => {
     switch (config.type) {
@@ -141,13 +158,16 @@ export function PropertiesPanel({
 
   return (
     <div className="w-80 border-l border-gray-200 bg-white flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div>
+      <div className="flex items-start justify-between p-4 border-b border-gray-200">
+        <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900">{selectedNode.data.label}</h3>
-          <p className="text-xs text-gray-500 capitalize">{selectedNode.data.type}</p>
+          <p className="text-xs text-gray-500 capitalize mb-1">{selectedNode.data.type}</p>
+          {actionDescription && (
+            <p className="text-xs text-gray-600 mt-1">{actionDescription}</p>
+          )}
         </div>
         {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="flex-shrink-0 ml-2">
             <X className="h-4 w-4" />
           </Button>
         )}
@@ -165,6 +185,20 @@ export function PropertiesPanel({
         <Button onClick={handleSave} className="w-full">
           Aplicar Cambios
         </Button>
+        {onDuplicate && (
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              if (selectedNode) {
+                onDuplicate(selectedNode.id);
+              }
+            }} 
+            className="w-full"
+          >
+            <Copy className="h-4 w-4 mr-2" />
+            Duplicar Nodo
+          </Button>
+        )}
         <Button variant="outline" onClick={onClose} className="w-full">
           Cerrar
         </Button>

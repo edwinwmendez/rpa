@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Importar CSS de ReactFlow primero para que nuestros estilos puedan sobrescribirlo */
+@import '@xyflow/react/dist/style.css';
 
 @keyframes slideIn {
   from {
@@ -18,6 +20,19 @@
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    
+    /* Variables CSS para colores consistentes */
+    --handle-blue: #3b82f6;
+    --handle-blue-dark: #2563eb;
+    --handle-indigo: #6366f1;
+    --handle-indigo-dark: #4f46e5;
+    --handle-amber: #f59e0b;
+    --handle-amber-dark: #d97706;
+    --handle-green: #10b981;
+    --handle-green-dark: #059669;
+    --handle-red: #ef4444;
+    --handle-red-dark: #dc2626;
+    --handle-gray: #6b7280;
   }
 
   body {
@@ -40,4 +55,144 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Ocultar marca de agua de React Flow */
+.react-flow__attribution {
+  display: none;
+}
+
+/* Estilos para handles de conexión - usando especificidad CSS en lugar de !important */
+.react-flow__handle.connection-handle {
+  width: 12px;
+  height: 12px;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  cursor: crosshair;
+  position: relative;
+  background: var(--handle-gray);
+}
+
+/* Anillo exterior sutil para mejor visibilidad */
+.react-flow__handle.connection-handle::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+  pointer-events: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  transform: scale(1);
+}
+
+.react-flow__handle.connection-handle:hover {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 0 0 3px rgba(59, 130, 246, 0.2);
+  z-index: 1000;
+  border-color: white;
+}
+
+.react-flow__handle.connection-handle:hover::after {
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: scale(1.15);
+}
+
+/* Colores específicos para diferentes tipos de handles */
+.react-flow__handle.connection-handle-target,
+.react-flow__handle.connection-handle-source {
+  background: linear-gradient(135deg, var(--handle-blue) 0%, var(--handle-blue-dark) 100%);
+  border-color: white;
+}
+
+.react-flow__handle.connection-handle-indigo {
+  background: linear-gradient(135deg, var(--handle-indigo) 0%, var(--handle-indigo-dark) 100%);
+  border-color: white;
+}
+
+.react-flow__handle.connection-handle-amber {
+  background: linear-gradient(135deg, var(--handle-amber) 0%, var(--handle-amber-dark) 100%);
+  border-color: white;
+}
+
+.react-flow__handle.connection-handle-green {
+  background: linear-gradient(135deg, var(--handle-green) 0%, var(--handle-green-dark) 100%);
+  border-color: white;
+}
+
+.react-flow__handle.connection-handle-red {
+  background: linear-gradient(135deg, var(--handle-red) 0%, var(--handle-red-dark) 100%);
+  border-color: white;
+}
+
+/* Estados de conexión de ReactFlow */
+.react-flow__handle.react-flow__handle-connecting {
+  background: linear-gradient(135deg, var(--handle-green) 0%, var(--handle-green-dark) 100%);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25), 0 3px 8px rgba(0, 0, 0, 0.25);
+  transform: scale(1.15);
+  transform-origin: center center;
+}
+
+.react-flow__handle.react-flow__handle-valid {
+  background: linear-gradient(135deg, var(--handle-green) 0%, var(--handle-green-dark) 100%);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.react-flow__handle.react-flow__handle-invalid {
+  background: linear-gradient(135deg, var(--handle-red) 0%, var(--handle-red-dark) 100%);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+}
+
+/* ==========================================
+   SISTEMA DE SELECCIÓN - React Flow
+   ==========================================
+
+   NODOS:
+   - React Flow maneja el ring exterior (box-shadow) mediante --xy-node-boxshadow-selected
+   - Cada componente (ActionNode, LoopNode, IfElseNode) maneja su propio borde
+     usando la prop `selected` y clases condicionales de Tailwind
+   - Variables CSS nativas funcionan perfectamente
+
+   EDGES:
+   - Las variables CSS (--xy-edge-stroke-selected) NO fueron suficientes
+   - Necesitamos selectores CSS específicos con !important
+   - React Flow tiene alta especificidad en sus estilos de edges
+   - Color azul (#3b82f6) + grosor 2.5px para visibilidad clara
+
+   Principios aplicados:
+   - Single Responsibility: Cada elemento maneja su apariencia
+   - Framework First donde es posible (nodos)
+   - Pragmatismo cuando es necesario (!important en edges)
+   - Consistencia visual: Color azul (#3b82f6) unificado
+*/
+
+.react-flow {
+  /* ===== NODOS ===== */
+  /* Ring azul semi-transparente cuando un nodo está seleccionado */
+  --xy-node-boxshadow-selected: 0 0 0 6px rgba(59, 130, 246, 0.2);
+
+  /* Box-shadow sutil en hover */
+  --xy-node-boxshadow-hover: 0 1px 4px 1px rgba(59, 130, 246, 0.15);
+
+  /* ===== EDGES ===== */
+  /* Edge normal - gris claro y ligeramente más grueso */
+  --xy-edge-stroke: #b1b1b7;
+  --xy-edge-stroke-width: 1.5;
+}
+
+/* Estilos para edges seleccionadas (la variable CSS no era suficiente) */
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge.selectable:focus .react-flow__edge-path,
+.react-flow__edge.selectable:focus-visible .react-flow__edge-path {
+  stroke: #3b82f6 !important;  /* Azul consistente con nodos */
+  stroke-width: 2.5 !important;  /* Más grueso que el default (1.5px) */
+}
+
+/* Eliminar outline nativo del navegador en nodos */
+.react-flow__node {
+  outline: none;
+}
+
+.react-flow__node:focus,
+.react-flow__node:focus-visible {
+  outline: none;
 }

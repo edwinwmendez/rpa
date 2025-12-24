@@ -1,4 +1,11 @@
-// If/Else Node - Nodo especial para acciones If/Else con visualización de ramas
+/**
+ * If/Else Node - Nodo especial para acciones If/Else con visualización de ramas
+ *
+ * Arquitectura de Selección:
+ * - Este componente maneja su propia apariencia (border, shadow) usando la prop `selected`
+ * - React Flow maneja el ring azul exterior mediante CSS (ver index.css)
+ * - Sin uso de !important - especificidad correcta de Tailwind
+ */
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { GitBranch, CheckCircle, XCircle } from 'lucide-react';
@@ -21,12 +28,23 @@ export const IfElseNode = memo(function IfElseNode({ data, selected }: IfElseNod
   return (
     <div
       className={cn(
-        'rounded-lg border-2 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-lg transition-all',
-        selected ? 'border-amber-500 shadow-xl ring-2 ring-amber-200' : 'border-amber-200',
-        'min-w-[280px]'
+        'rounded-lg border-2 bg-gradient-to-br from-amber-50 to-yellow-50 transition-all relative min-w-[280px]',
+        selected
+          ? 'border-blue-500'
+          : 'border-amber-200 shadow-lg hover:border-amber-300'
       )}
     >
-      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-amber-500" />
+      <Handle 
+        type="target" 
+        position={Position.Top} 
+        className="connection-handle connection-handle-target connection-handle-amber"
+        style={{ 
+          top: -6,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10
+        }}
+      />
       
       {/* Header del If/Else */}
       <div className="flex items-center gap-3 p-4 bg-amber-100 border-b border-amber-200 rounded-t-lg">
@@ -73,15 +91,25 @@ export const IfElseNode = memo(function IfElseNode({ data, selected }: IfElseNod
         type="source" 
         position={Position.Bottom} 
         id="true"
-        className="w-3 h-3 bg-green-500 left-[30%]"
-        style={{ left: '30%' }}
+        className="connection-handle connection-handle-source connection-handle-green"
+        style={{ 
+          left: '30%',
+          bottom: -6,
+          transform: 'translateX(-50%)',
+          zIndex: 10
+        }}
       />
       <Handle 
         type="source" 
         position={Position.Bottom} 
         id="false"
-        className="w-3 h-3 bg-red-500 left-[70%]"
-        style={{ left: '70%' }}
+        className="connection-handle connection-handle-source connection-handle-red"
+        style={{ 
+          left: '70%',
+          bottom: -6,
+          transform: 'translateX(-50%)',
+          zIndex: 10
+        }}
       />
     </div>
   );

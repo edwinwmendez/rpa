@@ -1,18 +1,17 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   ReactFlow,
   addEdge,
   useNodesState,
   useEdgesState,
   Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
   Panel,
   MarkerType,
 } from '@xyflow/react';
 import type { Node, Edge, Connection } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+// CSS de ReactFlow ahora se importa globalmente en index.css
 import type { ActionNodeData } from '../../types/workflow';
 import { ActionPalette } from './ActionPalette';
 import type { ActionTemplate } from './ActionPalette';
@@ -71,6 +70,17 @@ export function LoopCanvasEditor({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isPropertiesPanelVisible, setIsPropertiesPanelVisible] = useState(false);
+
+  // Ajustar vista solo cuando se carga inicialmente y hay nodos
+  useEffect(() => {
+    if (reactFlowInstance && initialNodes.length > 0) {
+      // Usar setTimeout para asegurar que los nodos se hayan renderizado
+      setTimeout(() => {
+        reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+      }, 100);
+    }
+  }, [reactFlowInstance]); // Solo cuando se inicializa la instancia, no cuando cambian los nodos
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -167,10 +177,17 @@ export function LoopCanvasEditor({
 
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: TypedNode) => {
     setSelectedNodeId(node.id);
+    setIsPropertiesPanelVisible(true);
   }, []);
 
   const handlePaneClick = useCallback(() => {
     setSelectedNodeId(null);
+    setIsPropertiesPanelVisible(false);
+  }, []);
+
+  const handleClosePropertiesPanel = useCallback(() => {
+    setSelectedNodeId(null);
+    setIsPropertiesPanelVisible(false);
   }, []);
 
   const handleConfigUpdate = useCallback((nodeId: string, config: ActionNodeData['config']) => {
@@ -187,6 +204,8 @@ export function LoopCanvasEditor({
     if (node.type === 'loop' && onOpenNestedLoop) {
       // Guardar cambios actuales antes de abrir loop anidado
       onSave(nodes, edges);
+      setSelectedNodeId(null);
+      setIsPropertiesPanelVisible(false);
       onOpenNestedLoop(node.id);
     }
   }, [nodes, edges, onSave, onOpenNestedLoop]);
@@ -239,34 +258,10 @@ export function LoopCanvasEditor({
             onPaneClick={handlePaneClick}
             nodeTypes={NODE_TYPES}
             defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
-            fitView
             className="bg-gray-50"
           >
             <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
             <Controls />
-            <MiniMap
-              nodeColor={(node) => {
-                if (node.type === 'loop') return '#6366f1';
-                if (node.type === 'if-else') return '#f59e0b';
-                if (node.type === 'action') {
-                  const data = node.data as ActionNodeData;
-                  const colors: Record<string, string> = {
-                    click: '#3b82f6',
-                    type: '#10b981',
-                    navigate: '#8b5cf6',
-                    extract: '#f97316',
-                    'send-email': '#ef4444',
-                    wait: '#6b7280',
-                    loop: '#6366f1',
-                    'if-else': '#f59e0b',
-                    'read-text': '#14b8a6',
-                  };
-                  return colors[data.type] || '#6b7280';
-                }
-                return '#6b7280';
-              }}
-              className="bg-white border border-gray-200"
-            />
             
             <Panel position="top-center" className="bg-indigo-100 border border-indigo-200 rounded-lg px-4 py-2 shadow-sm">
               <p className="text-sm text-indigo-700 font-medium">
@@ -277,13 +272,15 @@ export function LoopCanvasEditor({
         </div>
 
         {/* Panel de Propiedades */}
-        <PropertiesPanel
-          selectedNode={selectedNode}
-          nodes={nodes}
-          edges={edges}
-          onUpdate={handleConfigUpdate}
-          onClose={() => setSelectedNodeId(null)}
-        />
+        {isPropertiesPanelVisible && (
+          <PropertiesPanel
+            selectedNode={selectedNode}
+            nodes={nodes}
+            edges={edges}
+            onUpdate={handleConfigUpdate}
+            onClose={handleClosePropertiesPanel}
+          />
+        )}
       </div>
     </div>
   );
