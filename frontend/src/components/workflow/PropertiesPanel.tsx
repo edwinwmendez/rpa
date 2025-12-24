@@ -34,11 +34,18 @@ export function PropertiesPanel({
   onDuplicate,
 }: PropertiesPanelProps) {
   const [config, setConfig] = useState<ActionConfig | null>(null);
-  const { availableVariables, excelData } = useWorkflowVariables(nodes, edges);
+  // Filtrar solo nodos de acción para useWorkflowVariables (las notas no generan variables)
+  const actionNodes = nodes.filter((node) => node.type !== 'note' && 'config' in node.data) as Node<ActionNodeData>[];
+  const { availableVariables, excelData } = useWorkflowVariables(actionNodes, edges);
   const { success } = useToast();
 
   useEffect(() => {
     if (selectedNode) {
+      // No mostrar panel para notas
+      if (selectedNode.type === 'note') {
+        setConfig(null);
+        return;
+      }
       setConfig(selectedNode.data.config || { type: selectedNode.data.type, label: selectedNode.data.label } as ActionConfig);
     } else {
       setConfig(null);
@@ -83,7 +90,7 @@ export function PropertiesPanel({
   const actionDescription = actionDescriptions[config.type] || '';
 
   const renderForm = () => {
-    switch (config.type) {
+    switch ((config as ActionConfig).type) {
       case 'type':
         return (
           <TypeActionForm

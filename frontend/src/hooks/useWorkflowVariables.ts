@@ -2,10 +2,11 @@
 import { useMemo } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { ActionNodeData, WorkflowVariable, ExcelData } from '../types/workflow';
+import type { NoteNodeData } from '../components/workflow/NoteNode';
 import { useExcelFilesStore } from '../stores/excelFilesStore';
 
 export function useWorkflowVariables(
-  nodes: Node<ActionNodeData>[],
+  nodes: Node<ActionNodeData | NoteNodeData>[],
   edges: Edge[]
 ): {
   availableVariables: WorkflowVariable[];
@@ -47,21 +48,27 @@ export function useWorkflowVariables(
     const nodeMap = new Map(nodes.map(n => [n.id, n]));
 
     // Función para obtener nodos anteriores (predecesores)
-    const getPredecessors = (nodeId: string): Node<ActionNodeData>[] => {
+    const getPredecessors = (nodeId: string): Node<ActionNodeData | NoteNodeData>[] => {
       const incomingEdges = edges.filter(e => e.target === nodeId);
       return incomingEdges
         .map(e => nodeMap.get(e.source))
-        .filter((n): n is Node<ActionNodeData> => n !== undefined);
+        .filter((n): n is Node<ActionNodeData | NoteNodeData> => n !== undefined);
     };
 
     // Procesar nodos en orden
-    const processNode = (node: Node<ActionNodeData>) => {
+    const processNode = (node: Node<ActionNodeData | NoteNodeData>) => {
       if (processedNodes.has(node.id)) return;
       
       const predecessors = getPredecessors(node.id);
       predecessors.forEach(p => processNode(p));
 
-      const config = node.data.config;
+      // Saltar nodos de nota (no tienen config ni generan variables)
+      if (node.type === 'note' || !('config' in node.data)) {
+        processedNodes.add(node.id);
+        return;
+      }
+
+      const config = (node.data as ActionNodeData).config;
 
       // Si es Excel Read, agregar variable y datos
       if (config.type === 'excel-read') {

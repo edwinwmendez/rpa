@@ -8,7 +8,7 @@
  */
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { MousePointer2, FileText, Globe, Database, Mail, Clock, FileSpreadsheet, RefreshCw, GitBranch } from 'lucide-react';
+import { MousePointer2, FileText, Globe, Database, Mail, Clock, FileSpreadsheet, RefreshCw, GitBranch, AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { ActionNodeData as ActionNodeDataType } from '../../types/workflow';
 
@@ -18,6 +18,8 @@ interface ActionNodeProps {
   data: ActionNodeDataType;
   selected?: boolean;
   id: string;
+  dataValidationErrors?: number;
+  dataValidationWarnings?: number;
 }
 
 const actionIcons = {
@@ -47,9 +49,11 @@ const actionColors = {
 };
 
 // Memoizado para evitar re-renders innecesarios y el warning de ReactFlow
-export const ActionNode = memo(function ActionNode({ data, selected }: ActionNodeProps) {
+export const ActionNode = memo(function ActionNode({ data, selected, dataValidationErrors, dataValidationWarnings }: ActionNodeProps) {
   const Icon = (actionIcons[data.type as keyof typeof actionIcons] || MousePointer2) as typeof MousePointer2;
   const colorClass = (actionColors[data.type as keyof typeof actionColors] || 'bg-gray-500') as string;
+  const hasErrors = (dataValidationErrors || (data as any).validationErrors || 0) > 0;
+  const hasWarnings = (dataValidationWarnings || (data as any).validationWarnings || 0) > 0;
 
   return (
     <div
@@ -81,6 +85,16 @@ export const ActionNode = memo(function ActionNode({ data, selected }: ActionNod
           <div className="font-semibold text-gray-900">{data.label}</div>
           <div className="text-xs text-gray-500 capitalize">{data.type}</div>
         </div>
+        {(hasErrors || hasWarnings) && (
+          <div className="flex-shrink-0">
+            {hasErrors && (
+              <AlertCircle className="h-4 w-4 text-red-500" title="Errores de validación" />
+            )}
+            {hasWarnings && !hasErrors && (
+              <AlertCircle className="h-4 w-4 text-yellow-500" title="Advertencias de validación" />
+            )}
+          </div>
+        )}
       </div>
       
       <Handle 

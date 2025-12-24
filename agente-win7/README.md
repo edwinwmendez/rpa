@@ -1,6 +1,6 @@
 # Agente RPA - Windows 7
 
-Agente local Python LIGERO para Windows 7 (sin automatización web)
+Agente local Python para Windows 7
 
 ## 📋 Requisitos
 
@@ -9,16 +9,10 @@ Agente local Python LIGERO para Windows 7 (sin automatización web)
 - Visual C++ Redistributable 2015
 - .NET Framework 4.5+
 
-## ⚠️ Limitaciones
-
-Este agente es una **versión ligera** para Windows 7:
+## ✅ Características
 
 - ✅ Automatización desktop (pywinauto)
-- ✅ Procesamiento Excel/CSV  
-- ❌ **SIN automatización web** (usa Windows 10/11 para web)
-
-**Razón:** Python 3.8 y Windows 7 tienen limitaciones que impiden 
-usar Playwright. Para automatización web, use Windows 10/11.
+- ✅ Procesamiento Excel/CSV (pandas)
 
 ## 🚀 Instalación
 
@@ -36,12 +30,10 @@ python app.py
 
 El agente escuchará en `http://localhost:5000`
 
-## 📦 Diferencias con agente Win10/11
+## 📦 Características
 
-| Feature | Win7 | Win10/11 |
-|---------|------|----------|
-| Desktop automation | ✅ | ✅ |
-| Web automation | ❌ | ✅ |
-| Excel/CSV | ✅ | ✅ |
-| Python | 3.8 | 3.10 |
-| Tamaño | ~150MB | ~200MB |
+| Feature | Soporte |
+|---------|---------|
+| Desktop automation | ✅ pywinauto |
+| Excel/CSV processing | ✅ pandas |
+| Python | 3.8 |

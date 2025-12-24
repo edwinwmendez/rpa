@@ -273,13 +273,13 @@ export function LoopCanvasEditor({
 
         {/* Panel de Propiedades */}
         {isPropertiesPanelVisible && (
-          <PropertiesPanel
-            selectedNode={selectedNode}
-            nodes={nodes}
-            edges={edges}
-            onUpdate={handleConfigUpdate}
+        <PropertiesPanel
+          selectedNode={selectedNode}
+          nodes={nodes}
+          edges={edges}
+          onUpdate={handleConfigUpdate}
             onClose={handleClosePropertiesPanel}
-          />
+        />
         )}
       </div>
     </div>

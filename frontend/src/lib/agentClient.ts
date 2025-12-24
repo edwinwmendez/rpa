@@ -47,7 +47,28 @@ class AgentClient {
   async executeWorkflow(workflow: Record<string, unknown>): Promise<WorkflowExecutionResult> {
     try {
       const response = await this.client.post('/execute', workflow);
-      return response.data as WorkflowExecutionResult;
+      const data = response.data;
+      
+      // Transformar formato del agente al formato esperado por el frontend
+      const result: WorkflowExecutionResult = {
+        status: data.status === 'success' ? 'completed' : 'error',
+        logs: data.logs || [],
+        error: data.error,
+      };
+      
+      // Agregar información adicional si está disponible
+      if (data.executed_nodes !== undefined) {
+        result.totalSteps = data.executed_nodes;
+        result.currentStep = data.executed_nodes;
+      }
+      
+      if (data.duration_seconds !== undefined) {
+        // Calcular progress basado en nodos ejecutados
+        // Por ahora, si está completado, progress es 100%
+        result.progress = result.status === 'completed' ? 100 : 0;
+      }
+      
+      return result;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al ejecutar workflow';
       return {

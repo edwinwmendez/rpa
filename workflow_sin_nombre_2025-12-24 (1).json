@@ -1,0 +1,78 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2025-12-24T03:56:21.901Z",
+  "workflow": {
+    "name": "Workflow sin nombre",
+    "nodes": [
+      {
+        "id": "click-1766548447254",
+        "type": "action",
+        "position": {
+          "x": 195,
+          "y": 78.5
+        },
+        "data": {
+          "label": "Hacer Clic",
+          "type": "click",
+          "config": {
+            "type": "click",
+            "label": "Hacer Clic",
+            "selector": "",
+            "clickType": "left"
+          }
+        },
+        "measured": {
+          "width": 200,
+          "height": 100
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "type-1766548575502",
+        "type": "action",
+        "position": {
+          "x": 212,
+          "y": 239.75
+        },
+        "data": {
+          "label": "Escribir Texto",
+          "type": "type",
+          "config": {
+            "type": "type",
+            "label": "Escribir Texto",
+            "selector": "",
+            "text": "",
+            "clearBefore": true
+          }
+        },
+        "measured": {
+          "width": 200,
+          "height": 100
+        },
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "width": 20,
+          "height": 20,
+          "color": "#6b7280"
+        },
+        "style": {
+          "strokeWidth": 2,
+          "stroke": "#6b7280"
+        },
+        "source": "click-1766548447254",
+        "target": "type-1766548575502",
+        "id": "xy-edge__click-1766548447254-type-1766548575502",
+        "selected": false
+      }
+    ]
+  }
+}

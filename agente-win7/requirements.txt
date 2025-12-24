@@ -1,11 +1,31 @@
-# Agente Windows 7 - Python 3.8 ÚNICAMENTE
-# Versiones MÁXIMAS compatibles con Python 3.8 y Windows 7
-# NO incluye Playwright (no soportado en Win7)
-# IMPORTANTE: NO actualizar a versiones mayores - incompatibles con Win7
+# ==========================================
+# Agente RPA - Windows 7
+# Python 3.8 ÚNICAMENTE
+# Versiones máximas compatibles
+# Actualizado: Diciembre 2024
+# ==========================================
+#
+# IMPORTANTE:
+# - NO actualizar a versiones mayores sin verificar compatibilidad
+# - Estas son las últimas versiones estables para Windows 7
+#
 
-Flask==2.3.3  # Última versión compatible con Python 3.8
-Flask-CORS==4.0.0  # Compatible con Flask 2.3.x
-pywinauto==0.6.8  # Versión estable para Win7
-pandas==1.5.3  # Última compatible con Python 3.8
-openpyxl==3.0.10  # Compatible con pandas 1.5.x
-pywin32==305  # Última versión estable para Win7
+# Web Framework
+Flask==2.3.3              # Última versión compatible con Python 3.8
+Flask-CORS==4.0.0         # CORS support para Flask 2.3.x
+Werkzeug==2.3.8           # Dependencia de Flask, compatible con 2.3.3
+
+# Desktop Automation
+pywinauto==0.6.8          # UI Automation para Windows (UIA + Win32)
+comtypes==1.2.0           # COM support (opcional, para UIA)
+pillow==9.5.0             # Screenshots y manipulación de imágenes
+
+# Excel/CSV Processing
+pandas==1.5.3             # Última compatible con Python 3.8
+openpyxl==3.0.10          # Excel .xlsx support
+xlrd==2.0.1               # Excel .xls legacy support (solo lectura)
+pywin32==305              # COM automation para Excel (si está instalado)
+
+# Utilities
+requests==2.31.0          # HTTP client (útil para APIs futuras)
+python-dateutil==2.8.2    # Fecha/hora utilities (dependencia de pandas)

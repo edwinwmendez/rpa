@@ -17,7 +17,7 @@ import type { ActionNodeData } from '../../types/workflow';
 import { ActionPalette } from './ActionPalette';
 import type { ActionTemplate } from './ActionPalette';
 import { Button } from '../ui/button';
-import { Save, Play, Trash2, Copy, Clipboard, Undo2, Redo2, CopyPlus, MousePointer2 } from 'lucide-react';
+import { Save, Play, Trash2, Copy, Clipboard, Undo2, Redo2, CopyPlus, MousePointer2, Download, Upload, AlignLeft, AlignRight, AlignCenterVertical, AlignCenterHorizontal, Search, AlertCircle, CheckCircle2, MessageSquare } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useWorkflowsStore } from '../../stores/workflowsStore';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -26,13 +26,22 @@ import { useToast } from '../ui/toast';
 import { ActionNode } from './ActionNode';
 import { LoopNode } from './LoopNode';
 import { IfElseNode } from './IfElseNode';
+import { NoteNode, type NoteNodeData } from './NoteNode';
 import { useWorkflowHistory } from '../../hooks/useWorkflowHistory';
+import { downloadWorkflowAsFile, importWorkflowFromFile } from '../../lib/workflowExportImport';
+import { alignNodes, type AlignmentDirection } from '../../lib/nodeAlignment';
+import { searchNodes, focusNode, type SearchResult } from '../../lib/nodeSearch';
+import { transformWorkflowForAgent } from '../../lib/workflowTransformer';
+import { agentClient } from '../../lib/agentClient';
+import { useAgentStore } from '../../stores/agentStore';
+import { validateWorkflow, type ValidationIssue } from '../../lib/nodeValidation';
 
 // Definido a nivel de módulo - NUNCA se recrea
 const NODE_TYPES = {
   action: ActionNode,
   loop: LoopNode,
   'if-else': IfElseNode,
+  note: NoteNode,
 } as const;
 
 const DEFAULT_EDGE_OPTIONS = {
@@ -56,7 +65,7 @@ interface WorkflowEditorProps {
 }
 
 // Tipo auxiliar para nodos tipados
-type TypedNode = Node<ActionNodeData>;
+type TypedNode = Node<ActionNodeData | NoteNodeData>;
 
 export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -75,6 +84,13 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
   const [isPropertiesPanelVisible, setIsPropertiesPanelVisible] = useState(false);
   // Estado para controlar selección múltiple (box selection)
   const [isSelectionModeActive, setIsSelectionModeActive] = useState(false);
+  // Estado para búsqueda de nodos
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // Estado para validación
+  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
+  const [showValidation, setShowValidation] = useState(false);
   
   // Estado para controlar navegación en loops anidados
   const [loopNavigationStack, setLoopNavigationStack] = useState<string[]>([]);
@@ -393,6 +409,10 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
   }, [nodes, edges, onSave]);
 
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: TypedNode) => {
+    // No mostrar panel de propiedades para notas
+    if (node.type === 'note') {
+      return;
+    }
     setSelectedNodeId(node.id);
     setIsPropertiesPanelVisible(true);
   }, []);
@@ -407,21 +427,33 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
     setIsPropertiesPanelVisible(false);
   }, []);
 
-  const handleConfigUpdate = useCallback((nodeId: string, config: ActionNodeData['config']) => {
+  const handleConfigUpdate = useCallback((nodeId: string, config: ActionNodeData['config'] | any) => {
     setNodes((nds) =>
-      nds.map((node) =>
-        node.id === nodeId
-          ? { ...node, data: { ...node.data, config } }
-          : node
-      )
+      nds.map((node) => {
+        if (node.id !== nodeId) return node;
+        
+        // Si es un nodo de nota, actualizar data directamente
+        if (node.type === 'note') {
+          return { ...node, data: { ...node.data, ...config } };
+        }
+        
+        // Para otros nodos, actualizar data.config
+        return { ...node, data: { ...node.data, config } };
+      })
     );
     // Guardar estado después de actualizar configuración
     setTimeout(() => {
-      const updatedNodes = nodes.map((node) =>
-        node.id === nodeId
-          ? { ...node, data: { ...node.data, config } }
-          : node
-      );
+      const updatedNodes = nodes.map((node) => {
+        if (node.id !== nodeId) return node;
+        
+        // Si es un nodo de nota, actualizar data directamente
+        if (node.type === 'note') {
+          return { ...node, data: { ...node.data, ...config } };
+        }
+        
+        // Para otros nodos, actualizar data.config
+        return { ...node, data: { ...node.data, config } };
+      });
       saveState(updatedNodes, edges);
     }, 0);
   }, [setNodes, nodes, edges, saveState]);
@@ -573,6 +605,239 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
     setNodes((nds) => nds.map((node) => ({ ...node, selected: true })));
     setEdges((eds) => eds.map((edge) => ({ ...edge, selected: true })));
   }, [setNodes, setEdges]);
+
+  // Handler para Exportar Workflow
+  const handleExportWorkflow = useCallback(() => {
+    try {
+      const workflowName = currentWorkflow?.name || 'Workflow sin nombre';
+      const workflowDescription = currentWorkflow?.description;
+      
+      downloadWorkflowAsFile(
+        workflowName,
+        workflowDescription,
+        nodes,
+        edges,
+        (currentWorkflow as any)?.excelFiles
+      );
+      
+      showToast('Workflow exportado correctamente', 'success');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error desconocido';
+      showToast(`Error al exportar workflow: ${message}`, 'error');
+    }
+  }, [currentWorkflow, nodes, edges, showToast]);
+
+  // Handler para Ejecutar Workflow
+  const handleExecuteWorkflow = useCallback(async () => {
+    try {
+      // Verificar que el agente esté conectado
+      const agentStatus = useAgentStore.getState().status;
+      if (agentStatus.status !== 'connected') {
+        showToast('El agente no está conectado. Por favor, inicia el agente local.', 'error');
+        return;
+      }
+
+      // Validar workflow antes de ejecutar
+      const validationIssues = validateWorkflow(nodes as TypedNode[], edges);
+      const errorCount = validationIssues.filter(issue => issue.severity === 'error').length;
+      if (errorCount > 0) {
+        showToast(
+          `El workflow tiene ${errorCount} error(es). Por favor, corrígelos antes de ejecutar.`,
+          'error'
+        );
+        setValidationIssues(validationIssues);
+        setShowValidation(true);
+        return;
+      }
+
+      // Obtener nombre del workflow
+      const workflowName = currentWorkflow?.name || 'Workflow sin nombre';
+
+      showToast('Ejecutando workflow...', 'info');
+
+      // Transformar workflow al formato del agente
+      const agentWorkflow = transformWorkflowForAgent(workflowName, nodes, edges);
+
+      // Ejecutar workflow (convertir a Record para compatibilidad con agentClient)
+      const result = await agentClient.executeWorkflow(agentWorkflow as Record<string, unknown>);
+
+      if (result.status === 'error') {
+        showToast(`Error ejecutando workflow: ${result.error || 'Error desconocido'}`, 'error');
+      } else {
+        showToast(
+          `Workflow ejecutado exitosamente. ${result.logs?.length || 0} pasos completados.`,
+          'success'
+        );
+        
+        // Opcional: Mostrar logs en consola o en un modal
+        if (result.logs && result.logs.length > 0) {
+          console.log('Logs de ejecución:', result.logs);
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error desconocido';
+      showToast(`Error al ejecutar workflow: ${message}`, 'error');
+      console.error('Error ejecutando workflow:', error);
+    }
+  }, [nodes, edges, currentWorkflow, showToast]);
+
+  // Handler para Importar Workflow
+  const handleImportWorkflow = useCallback(() => {
+    // Crear input file oculto
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.style.display = 'none';
+    
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        showToast('Importando workflow...', 'info');
+        
+        const imported = await importWorkflowFromFile(file);
+        
+        // Cargar el workflow importado
+        setNodes(imported.nodes as TypedNode[]);
+        setEdges(imported.edges);
+        resetHistory(imported.nodes as TypedNode[], imported.edges);
+        
+        // Si hay archivos Excel, intentar restaurarlos
+        if (imported.excelFiles && imported.excelFiles.length > 0) {
+          const { addFile } = useExcelFilesStore.getState();
+          imported.excelFiles.forEach((fileData) => {
+            const existing = useExcelFilesStore.getState().getFile(fileData.id);
+            if (!existing) {
+              addFile({
+                id: fileData.id,
+                name: fileData.name,
+                filePath: fileData.filePath,
+                fileContent: '', // Contenido vacío, se necesita recargar
+                headers: fileData.headers,
+                rows: [],
+                totalRows: fileData.totalRows,
+                delimiter: fileData.delimiter,
+                firstRowAsHeaders: fileData.firstRowAsHeaders,
+                loadedAt: new Date(),
+                syncedWithAgent: false,
+              });
+            }
+          });
+        }
+        
+        // Ajustar vista
+        if (reactFlowInstance && imported.nodes.length > 0) {
+          setTimeout(() => {
+            reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+          }, 100);
+        }
+        
+        showToast(`Workflow "${imported.name}" importado correctamente`, 'success');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error desconocido';
+        showToast(`Error al importar workflow: ${message}`, 'error');
+      } finally {
+        // Limpiar input
+        document.body.removeChild(input);
+      }
+    };
+    
+    document.body.appendChild(input);
+    input.click();
+  }, [setNodes, setEdges, resetHistory, reactFlowInstance, showToast]);
+
+  // Handler para alinear nodos
+  const handleAlignNodes = useCallback((direction: AlignmentDirection) => {
+    const selectedCount = nodes.filter((n) => n.selected).length;
+    if (selectedCount < 2) {
+      showToast('Selecciona al menos 2 nodos para alinear', 'warning');
+      return;
+    }
+
+    const alignedNodes = alignNodes(nodes as TypedNode[], direction);
+    setNodes(alignedNodes);
+    saveState(alignedNodes, edges);
+    showToast(`Nodos alineados (${selectedCount} nodos)`, 'success');
+  }, [nodes, edges, setNodes, saveState, showToast]);
+
+  // Handler para buscar nodos
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+    if (term.trim()) {
+      const results = searchNodes(nodes as TypedNode[], term);
+      setSearchResults(results);
+      setIsSearchOpen(true);
+    } else {
+      setSearchResults([]);
+      setIsSearchOpen(false);
+    }
+  }, [nodes]);
+
+  // Handler para enfocar resultado de búsqueda
+  const handleFocusSearchResult = useCallback((nodeId: string) => {
+    focusNode(nodeId, reactFlowInstance);
+    setNodes((nds) => nds.map((n) => ({ ...n, selected: n.id === nodeId })));
+    setSelectedNodeId(nodeId);
+    setIsPropertiesPanelVisible(true);
+    setIsSearchOpen(false);
+    setSearchTerm('');
+  }, [reactFlowInstance, setNodes]);
+
+  // Validar workflow cuando cambian nodos o edges
+  useEffect(() => {
+    const issues = validateWorkflow(nodes as TypedNode[], edges);
+    setValidationIssues(issues);
+  }, [nodes, edges]);
+
+  // Handler para agregar nota
+  const handleAddNote = useCallback(() => {
+    if (!reactFlowInstance) return;
+
+    const viewport = reactFlowInstance.getViewport();
+    const centerX = -viewport.x / viewport.zoom + window.innerWidth / 2 / viewport.zoom;
+    const centerY = -viewport.y / viewport.zoom + window.innerHeight / 2 / viewport.zoom;
+
+    const newNote: TypedNode = {
+      id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: 'note',
+      position: { x: centerX - 100, y: centerY - 50 },
+      data: {
+        title: 'Nota',
+        content: '',
+        color: 'yellow',
+      },
+    };
+
+    setNodes((nds) => [...nds, newNote]);
+    saveState([...nodes, newNote], edges);
+    showToast('Nota agregada', 'success');
+  }, [reactFlowInstance, nodes, edges, setNodes, saveState, showToast]);
+
+  // Escuchar actualizaciones de notas
+  useEffect(() => {
+    const handleNoteUpdate = (event: CustomEvent) => {
+      const { nodeId, content, color, title } = event.detail;
+      setNodes((nds) => {
+        const updated = nds.map((node) => {
+          if (node.id !== nodeId) return node;
+          const updatedData = { ...node.data };
+          if (content !== undefined) updatedData.content = content;
+          if (color !== undefined) updatedData.color = color;
+          if (title !== undefined) updatedData.title = title;
+          return { ...node, data: updatedData };
+        });
+        // Guardar estado después de actualizar
+        setTimeout(() => {
+          saveState(updated, edges);
+        }, 0);
+        return updated;
+      });
+    };
+
+    window.addEventListener('note-update', handleNoteUpdate as EventListener);
+    return () => window.removeEventListener('note-update', handleNoteUpdate as EventListener);
+  }, [setNodes]);
 
   // Handler para atajos de teclado
   useEffect(() => {
@@ -761,9 +1026,25 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
     );
   }
 
+  // Agregar indicadores de validación a los nodos
+  const nodesWithValidation = nodes.map(n => {
+    const nodeIssues = validationIssues.filter(i => i.nodeId === n.id);
+    const errors = nodeIssues.filter(i => i.severity === 'error').length;
+    const warnings = nodeIssues.filter(i => i.severity === 'warning').length;
+    
+    return {
+      ...n,
+      data: {
+        ...n.data,
+        validationErrors: errors,
+        validationWarnings: warnings,
+      },
+    };
+  });
+
   // Ocultar nodos con parentId en el canvas principal usando la prop `hidden`
   // Esto permite que LoopNode pueda acceder a ellos vía getNodes() pero no se renderizan
-  const nodesWithHiddenChildren = nodes.map(n => ({
+  const nodesWithHiddenChildren = nodesWithValidation.map(n => ({
     ...n,
     hidden: n.parentId !== undefined, // Ocultar nodos que tienen un padre
   }));
@@ -879,12 +1160,135 @@ export function WorkflowEditor({ onSave }: WorkflowEditorProps) {
               <Trash2 className="h-4 w-4" />
             </Button>
             
+            {/* Alinear Nodos */}
+            {nodes.filter((n) => n.selected).length >= 2 && (
+              <>
+                <div className="border-l border-gray-300 mx-1" />
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAlignNodes('left')}
+                    title="Alinear izquierda"
+                  >
+                    <AlignLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAlignNodes('right')}
+                    title="Alinear derecha"
+                  >
+                    <AlignRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAlignNodes('center-vertical')}
+                    title="Centrar verticalmente"
+                  >
+                    <AlignCenterVertical className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAlignNodes('center-horizontal')}
+                    title="Centrar horizontalmente"
+                  >
+                    <AlignCenterHorizontal className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Búsqueda */}
+            <div className="border-l border-gray-300 mx-1" />
+            <div className="relative">
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  onFocus={() => searchTerm && setIsSearchOpen(true)}
+                  placeholder="Buscar nodos..."
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+                />
+                <Search className="h-4 w-4 text-gray-400 absolute right-3" />
+              </div>
+              
+              {/* Resultados de búsqueda */}
+              {isSearchOpen && searchResults.length > 0 && (
+                <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto min-w-[300px]">
+                  {searchResults.map((result) => (
+                    <button
+                      key={result.nodeId}
+                      onClick={() => handleFocusSearchResult(result.nodeId)}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="font-medium text-sm">{result.matchedText}</div>
+                      <div className="text-xs text-gray-500 capitalize">
+                        {result.matchType} • {result.node.data.type}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Validación */}
+            <div className="border-l border-gray-300 mx-1" />
+            <Button
+              variant={validationIssues.length > 0 ? (validationIssues.some(i => i.severity === 'error') ? "destructive" : "outline") : "outline"}
+              size="sm"
+              onClick={() => setShowValidation(!showValidation)}
+              title={validationIssues.length > 0 ? `${validationIssues.length} problema(s) encontrado(s)` : 'Sin problemas de validación'}
+            >
+              {validationIssues.length === 0 ? (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              ) : (
+                <>
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationIssues.filter(i => i.severity === 'error').length}
+                </>
+              )}
+            </Button>
+
+            {/* Agregar Nota */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAddNote}
+              title="Agregar nota/comentario"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+
+            {/* Export/Import */}
+            <div className="border-l border-gray-300 mx-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportWorkflow}
+              disabled={nodes.length === 0}
+              title="Exportar workflow a JSON"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImportWorkflow}
+              title="Importar workflow desde JSON"
+            >
+              <Upload className="h-4 w-4" />
+            </Button>
+            
             {/* Save/Execute */}
             <Button variant="outline" size="sm" onClick={handleSave} title="Guardar (Ctrl+S)">
               <Save className="h-4 w-4 mr-2" />
               Guardar
             </Button>
-            <Button size="sm" onClick={() => console.log('Ejecutar workflow')}>
+            <Button size="sm" onClick={handleExecuteWorkflow}>
               <Play className="h-4 w-4 mr-2" />
               Ejecutar
             </Button>
