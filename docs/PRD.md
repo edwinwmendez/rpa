@@ -1,10 +1,10 @@
 # PRD: Sistema RPA Personalizado con Constructor Visual de Workflows
 
-**Versión:** 2.0  
+**Versión:** 3.0  
 **Fecha:** Diciembre 2024  
 **Autor:** Edwin (CTO) + Claude  
-**Estado:** Actualizado - Arquitectura Firebase  
-**Última actualización:** Diciembre 2024
+**Estado:** ✅ MVP Frontend Completado  
+**Última actualización:** 23 Diciembre 2024
 
 ---
 
@@ -942,16 +942,18 @@ Funciones: {{UPPERCASE(nombre)}}, {{DATE_FORMAT(fecha, "DD/MM/YYYY")}}
 
 | Componente | Tecnología | Versión | Propósito |
 |------------|-----------|---------|-----------|
-| **Framework** | React | 18.2+ | UI framework |
-| **Lenguaje** | TypeScript | 5.2+ | Type safety |
-| **Build Tool** | Vite | 5.0+ | Build rápido |
-| **State Management** | Zustand | 4.4+ | Estado global |
-| **Workflow Editor** | React Flow | 11.10+ | Constructor visual |
-| **HTTP Client** | Axios | 1.6+ | Comunicación con agente |
-| **UI Components** | Radix UI | Latest | Componentes accesibles |
-| **Styling** | Tailwind CSS | 3.3+ | Utility-first CSS |
-| **Routing** | React Router | 6.20+ | Navegación |
-| **Backend Services** | Firebase SDK | 10.7+ | Firestore + Auth |
+| **Framework** | React | 19.2+ | UI framework |
+| **Lenguaje** | TypeScript | 5.9+ | Type safety |
+| **Build Tool** | Vite | 7.3+ | Build rápido |
+| **State Management** | Zustand | 5.0+ | Estado global |
+| **Workflow Editor** | @xyflow/react | 12.10+ | Constructor visual (nodos, edges, canvas) |
+| **HTTP Client** | Axios | 1.13+ | Comunicación con agente |
+| **UI Components** | Radix UI | Latest | Componentes accesibles (Dialog, Select, etc.) |
+| **Styling** | Tailwind CSS | 4.1+ | Utility-first CSS |
+| **Routing** | React Router DOM | 7.11+ | Navegación SPA |
+| **Backend Services** | Firebase SDK | 12.7+ | Firestore + Auth |
+| **Icons** | Lucide React | 0.562+ | Iconos SVG |
+| **Utilities** | clsx + tailwind-merge | Latest | Clases CSS condicionales |
 | **Deployment** | Firebase Hosting | - | CDN global automático |
 
 ### 8.2 Backend (Firebase)
@@ -1025,45 +1027,63 @@ Funciones: {{UPPERCASE(nombre)}}, {{DATE_FORMAT(fecha, "DD/MM/YYYY")}}
 
 #### Firebase (Backend):
 - [x] Configuración Firebase completa
-- [ ] Auth UI (login, registro) - Firebase Auth
-- [ ] CRUD workflows (crear, leer, actualizar, eliminar) - Firestore
-- [ ] Reglas de seguridad Firestore
+- [x] Auth UI (login, registro) - Firebase Auth
+- [x] CRUD workflows (crear, leer, actualizar, eliminar) - Firestore
+- [x] Reglas de seguridad Firestore
+- [x] Índices compuestos para queries optimizados
 
 #### Frontend:
-- [x] Estructura base React + TypeScript + Vite
-- [ ] Auth UI (login, registro) con Firebase SDK
-- [ ] Dashboard principal
-- [ ] Lista de workflows
-- [ ] Banner estado del agente (conexión real)
+- [x] Estructura base React 19 + TypeScript 5.9 + Vite 7
+- [x] Auth UI (login, registro) con Firebase SDK
+- [x] Dashboard principal con estadísticas
+- [x] Lista de workflows con búsqueda y eliminación
+- [x] Banner estado del agente (conexión real con polling)
+- [x] Perfiles de usuario en Firestore
 
 #### Agente:
 - [x] Flask server básico (Win7 y Win10)
 - [x] Health check endpoint
-- [ ] 3 acciones: Click, Type, Wait (desktop)
-- [ ] Ejecutor de workflows simple
+- [ ] 3 acciones: Click, Type, Wait (desktop) - *Pendiente ejecución*
+- [ ] Ejecutor de workflows simple - *Pendiente*
 
-**Entregable:** Sistema funcional con 3 acciones básicas
+**Estado:** ✅ Frontend completado | ⏳ Agente parcial
 
 ### Fase 2: Constructor Visual (Semanas 5-7)
 
 #### Frontend:
-- [ ] Implementar React Flow
-- [ ] Drag & drop de acciones
-- [ ] Panel de propiedades dinámico
-- [ ] Conexión entre nodos
-- [ ] Validación de flujos
-- [ ] Auto-guardado en Firestore
+- [x] Implementar @xyflow/react v12 (migrado desde React Flow v11)
+- [x] Drag & drop de acciones desde paleta
+- [x] Panel de propiedades dinámico por tipo de acción
+- [x] Conexión entre nodos con flechas animadas
+- [x] Validación visual de flujos
+- [x] Guardado manual con diálogo para nombre
+- [x] Sistema de toasts para notificaciones
+- [x] Sidebar colapsable con persistencia
+
+#### Nodos Personalizados:
+- [x] ActionNode (acciones generales)
+- [x] LoopNode (bucles con canvas anidado)
+- [x] IfElseNode (bifurcación condicional)
+
+#### Acciones Implementadas (UI):
+- [x] Click (selector, tipo de clic)
+- [x] Escribir Texto (con variables {{var}})
+- [x] Esperar (tiempo, elemento aparece/desaparece)
+- [x] Navegar (URL)
+- [x] Extraer/Leer Texto (selector a variable)
+- [x] Loop (Excel, N veces, until, while)
+- [x] If/Else (condición con operadores)
 
 #### Firebase:
-- [ ] Schema de workflows en Firestore
-- [ ] Validación de workflows (client-side + Firestore rules)
+- [x] Schema de workflows en Firestore (nodes, edges, excelFiles)
+- [x] Validación con Firestore rules por usuario
 
 #### Agente:
-- [ ] Parser de workflows con nodos conectados
-- [ ] Logging estructurado
-- [ ] Endpoint `/execute` completo
+- [ ] Parser de workflows con nodos conectados - *Pendiente*
+- [ ] Logging estructurado - *Pendiente*
+- [ ] Endpoint `/execute` completo - *Pendiente*
 
-**Entregable:** Constructor visual funcional
+**Estado:** ✅ Frontend completado | ⏳ Agente pendiente
 
 ### Fase 3: Targeting System (Semanas 8-9)
 
@@ -1076,29 +1096,37 @@ Funciones: {{UPPERCASE(nombre)}}, {{DATE_FORMAT(fecha, "DD/MM/YYYY")}}
 - [ ] Endpoint `/picker/start` y `/picker/capture`
 
 #### Frontend:
-- [ ] Modal "Seleccionar elemento"
-- [ ] Visualización de elemento capturado
-- [ ] Confirmación/Retry
-- [ ] Integración con React Flow
+- [x] Modal "Seleccionar elemento" (UI preparada)
+- [x] Botón ElementPicker en formularios
+- [ ] Visualización de elemento capturado - *Pendiente integración*
+- [ ] Confirmación/Retry - *Pendiente integración*
 
-**Entregable:** Sistema de targeting funcional
+**Estado:** ⏳ UI preparada, integración pendiente
 
 ### Fase 4: Excel + Loop (Semanas 10-11)
 
 #### Agente:
-- [ ] Acción Excel Read (pandas) - Win7 y Win10
-- [ ] Acción Excel Write (COM + openpyxl) - Win10, COM solo - Win7
-- [ ] Acción Loop sobre datos
-- [ ] Sistema de variables {{placeholder}}
-- [ ] Reemplazo de variables en acciones
+- [ ] Acción Excel Read (pandas) - Win7 y Win10 - *Pendiente*
+- [ ] Acción Excel Write (COM + openpyxl) - *Pendiente*
+- [ ] Acción Loop sobre datos - *Pendiente*
+- [ ] Sistema de variables {{placeholder}} - *Pendiente*
+- [ ] Reemplazo de variables en acciones - *Pendiente*
 
 #### Frontend:
-- [ ] Configuración de Excel Read
-- [ ] Configuración de Loop
-- [ ] Visualización de variables disponibles
-- [ ] Preview de datos Excel
+- [x] Panel global de Excel/CSV en sidebar (colapsable)
+- [x] Carga y preview de archivos Excel/CSV
+- [x] Detección automática de delimitador
+- [x] Sistema de variables con autocompletado
+- [x] Selector visual de variables (botón insertar)
+- [x] Sincronización de archivos con agente local
+- [x] Configuración de Loop con múltiples modos:
+  - [x] Modo Excel/CSV (iterar sobre filas)
+  - [x] Modo N veces (repetir cantidad fija)
+  - [x] Modo Until (hasta que condición)
+  - [x] Modo While (mientras condición)
+- [x] Canvas anidado para acciones dentro de Loop
 
-**Entregable:** Procesamiento bulk de Excel funcional
+**Estado:** ✅ Frontend completado | ⏳ Agente pendiente
 
 ### Fase 5: Instalador + Diagnóstico (Semanas 12-13)
 
@@ -1114,12 +1142,12 @@ Funciones: {{UPPERCASE(nombre)}}, {{DATE_FORMAT(fecha, "DD/MM/YYYY")}}
 - [ ] Dashboard admin de fallos comunes (opcional)
 
 #### Frontend:
-- [ ] Página "Diagnóstico y Recursos"
-- [ ] Visualización estado del agente en tiempo real
-- [ ] Guías troubleshooting
-- [ ] Links de descarga directos
+- [x] Página "Diagnóstico" básica
+- [x] Visualización estado del agente en tiempo real
+- [ ] Guías troubleshooting completas - *Pendiente*
+- [ ] Links de descarga directos - *Pendiente*
 
-**Entregable:** Instalador robusto con diagnóstico
+**Estado:** ⏳ Parcialmente completado
 
 ### Fase 6: Web Automation (Semanas 14-15)
 
@@ -1132,11 +1160,12 @@ Funciones: {{UPPERCASE(nombre)}}, {{DATE_FORMAT(fecha, "DD/MM/YYYY")}}
 - [ ] Soporte Chrome, Edge, Firefox
 
 #### Frontend:
-- [ ] Switch Desktop/Web en constructor
-- [ ] Configuración de acciones web
-- [ ] Detección automática de capacidades del agente
+- [x] Acción Navigate configurada en UI
+- [ ] Switch Desktop/Web en constructor - *Futuro*
+- [ ] Configuración de acciones web específicas - *Futuro*
+- [ ] Detección automática de capacidades del agente - *Futuro*
 
-**Entregable:** Automatización web funcional (solo Win10/11)
+**Estado:** ⏳ Pendiente (requiere agente)
 
 ### Fase 7: Galería + Compartir (Semanas 16-17)
 
@@ -1151,18 +1180,36 @@ Funciones: {{UPPERCASE(nombre)}}, {{DATE_FORMAT(fecha, "DD/MM/YYYY")}}
 - [ ] Rating y comentarios
 - [ ] Compartir workflows públicamente
 
-**Entregable:** Sistema de compartir workflows
+**Estado:** 📋 Planificado
 
-Fase 8: Polish + Testing (Semanas 18-20)
+### Fase 8: Polish + Testing (Semanas 18-20)
 
- Tests unitarios (>70% cobertura)
- Tests E2E (Playwright frontend, Pytest agente)
- Performance optimization
- Refactor código crítico
- Documentación completa
- Videos tutoriales
+- [ ] Tests unitarios (>70% cobertura)
+- [ ] Tests E2E (Playwright frontend, Pytest agente)
+- [ ] Performance optimization
+- [ ] Refactor código crítico
+- [ ] Documentación completa
+- [ ] Videos tutoriales
 
-Entregable: Producto production-ready
+**Estado:** 📋 Planificado
+
+---
+
+### 📊 Resumen de Progreso (Diciembre 2024)
+
+| Fase | Frontend | Agente | Estado General |
+|------|----------|--------|----------------|
+| Fase 0: Setup | ✅ 100% | ✅ 100% | ✅ Completado |
+| Fase 1: MVP Core | ✅ 100% | ⏳ 50% | ⏳ En progreso |
+| Fase 2: Constructor Visual | ✅ 100% | ⏳ 0% | ⏳ Frontend listo |
+| Fase 3: Targeting | ⏳ 60% | ⏳ 0% | ⏳ UI preparada |
+| Fase 4: Excel + Loop | ✅ 100% | ⏳ 0% | ⏳ Frontend listo |
+| Fase 5: Instalador | ⏳ 30% | ⏳ 0% | ⏳ Parcial |
+| Fase 6: Web Automation | ⏳ 20% | ⏳ 0% | 📋 Pendiente |
+| Fase 7: Galería | 📋 0% | N/A | 📋 Planificado |
+| Fase 8: Testing | 📋 0% | 📋 0% | 📋 Planificado |
+
+**Próximo paso crítico:** Implementar ejecución de workflows en el agente
 
 ## 10. Criterios de Aceptación Globales
 
@@ -1273,12 +1320,15 @@ Backend UIA/win32: Tecnologías de Microsoft para acceder a elementos UI
 
 ### B. Referencias Técnicas
 
+- **@xyflow/react docs:** https://reactflow.dev/ (v12+)
+- **React docs:** https://react.dev/
 - **pywinauto docs:** https://pywinauto.readthedocs.io/
-- **React Flow docs:** https://reactflow.dev/
 - **Playwright docs:** https://playwright.dev/python/
 - **Firebase docs:** https://firebase.google.com/docs
-- **Flask docs:** https://flask.palletsprojects.com/
 - **Firestore rules:** https://firebase.google.com/docs/firestore/security/get-started
+- **Flask docs:** https://flask.palletsprojects.com/
+- **Tailwind CSS v4:** https://tailwindcss.com/docs
+- **Radix UI:** https://www.radix-ui.com/
 
 
 ## 15. Aprobación
