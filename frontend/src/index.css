@@ -1,6 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
 
 @layer base {
   :root {
@@ -18,7 +27,7 @@
   }
 
   * {
-    @apply border-gray-200;
+    border-color: rgb(229 231 235);
   }
 }
 

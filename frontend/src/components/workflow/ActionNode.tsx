@@ -1,12 +1,16 @@
 // Action Node Component for ReactFlow
-import { Handle, Position, NodeProps } from 'reactflow';
-import { MousePointer2, FileText, Globe, Database, Mail, Clock } from 'lucide-react';
+import { memo } from 'react';
+import { Handle, Position } from '@xyflow/react';
+import { MousePointer2, FileText, Globe, Database, Mail, Clock, FileSpreadsheet, RefreshCw, GitBranch } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import type { ActionNodeData as ActionNodeDataType } from '../../types/workflow';
 
-export interface ActionNodeData {
-  label: string;
-  type: 'click' | 'type' | 'navigate' | 'extract' | 'send-email' | 'wait';
-  config?: Record<string, unknown>;
+export type { ActionNodeDataType as ActionNodeData };
+
+interface ActionNodeProps {
+  data: ActionNodeDataType;
+  selected?: boolean;
+  id: string;
 }
 
 const actionIcons = {
@@ -16,6 +20,10 @@ const actionIcons = {
   extract: Database,
   'send-email': Mail,
   wait: Clock,
+  'excel-read': FileSpreadsheet,
+  loop: RefreshCw,
+  'if-else': GitBranch,
+  'read-text': Database,
 };
 
 const actionColors = {
@@ -25,11 +33,16 @@ const actionColors = {
   extract: 'bg-orange-500',
   'send-email': 'bg-red-500',
   wait: 'bg-gray-500',
+  'excel-read': 'bg-emerald-500',
+  loop: 'bg-indigo-500',
+  'if-else': 'bg-yellow-500',
+  'read-text': 'bg-teal-500',
 };
 
-export function ActionNode({ data, selected }: NodeProps<ActionNodeData>) {
-  const Icon = actionIcons[data.type] || MousePointer2;
-  const colorClass = actionColors[data.type] || 'bg-gray-500';
+// Memoizado para evitar re-renders innecesarios y el warning de ReactFlow
+export const ActionNode = memo(function ActionNode({ data, selected }: ActionNodeProps) {
+  const Icon = (actionIcons[data.type as keyof typeof actionIcons] || MousePointer2) as typeof MousePointer2;
+  const colorClass = (actionColors[data.type as keyof typeof actionColors] || 'bg-gray-500') as string;
 
   return (
     <div
@@ -54,5 +67,5 @@ export function ActionNode({ data, selected }: NodeProps<ActionNodeData>) {
       <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
     </div>
   );
-}
+});
 

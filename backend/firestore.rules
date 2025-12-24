@@ -35,6 +35,24 @@ service cloud.firestore {
                               isOwner(resource.data.userId);
     }
     
+    // Perfiles de usuario
+    match /users/{userId} {
+      // Cualquier usuario autenticado puede leer cualquier perfil (para búsquedas, etc.)
+      allow read: if isAuthenticated();
+      
+      // Solo el propio usuario puede crear su perfil (al registrarse)
+      // El userId en la ruta debe coincidir con el uid del usuario autenticado
+      allow create: if isAuthenticated() && 
+                       request.auth.uid == userId;
+      
+      // Solo el propio usuario puede actualizar su perfil
+      allow update: if isAuthenticated() && 
+                       request.auth.uid == userId;
+      
+      // No se permite eliminar perfiles
+      allow delete: if false;
+    }
+    
     // Configuraciones de usuario
     match /userSettings/{userId} {
       allow read, write: if isOwner(userId);

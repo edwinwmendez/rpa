@@ -1,7 +1,6 @@
 // Settings Page
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
-import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 
 export default function SettingsPage() {
@@ -20,13 +19,28 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="agent-url">URL del Agente</Label>
-            <Input id="agent-url" defaultValue="http://localhost:5000" />
+            <Input 
+              id="agent-url" 
+              defaultValue={import.meta.env.VITE_AGENT_URL || 'http://localhost:5000'} 
+            />
+            <p className="text-xs text-gray-500">
+              Configurado desde variable de entorno: VITE_AGENT_URL
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="agent-timeout">Timeout (ms)</Label>
-            <Input id="agent-timeout" type="number" defaultValue="30000" />
+            <Input 
+              id="agent-timeout" 
+              type="number" 
+              defaultValue={import.meta.env.VITE_AGENT_TIMEOUT || '30000'} 
+            />
+            <p className="text-xs text-gray-500">
+              Configurado desde variable de entorno: VITE_AGENT_TIMEOUT
+            </p>
           </div>
-          <Button>Guardar Configuración</Button>
+          <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-md">
+            ℹ️ Para cambiar estos valores, edita el archivo <code className="text-xs bg-white px-1 py-0.5 rounded">.env</code> y reinicia el servidor de desarrollo.
+          </p>
         </CardContent>
       </Card>
 

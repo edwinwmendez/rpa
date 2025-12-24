@@ -1,11 +1,12 @@
 // Agent Store - Estado del agente usando Zustand
 import { create } from 'zustand';
-import { agentClient, AgentStatus } from '../lib/agentClient';
+import { agentClient } from '../lib/agentClient';
+import type { AgentStatus } from '../lib/agentClient';
 
 interface AgentStore {
   status: AgentStatus;
   isChecking: boolean;
-  intervalId: NodeJS.Timeout | null;
+  intervalId: ReturnType<typeof setInterval> | null;
   checkStatus: () => Promise<void>;
   startAutoCheck: () => void;
   stopAutoCheck: () => void;

@@ -1,14 +1,37 @@
 // Workflows List Page
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, MoreVertical, Play, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
+import { Loading } from '../components/ui/loading';
+import { useAuthStore } from '../stores/authStore';
+import { useWorkflowsStore } from '../stores/workflowsStore';
 
 export default function WorkflowsPage() {
   const navigate = useNavigate();
-  const workflows: any[] = []; // TODO: Cargar desde Firebase
+  const { user } = useAuthStore();
+  const { workflows, loading, error, fetchWorkflows, deleteWorkflow } = useWorkflowsStore();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      fetchWorkflows(user.uid);
+    }
+  }, [user, fetchWorkflows]);
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('¿Estás seguro de eliminar este workflow?')) {
+      await deleteWorkflow(id);
+    }
+  };
+
+  const filteredWorkflows = workflows.filter((workflow) =>
+    workflow.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    workflow.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="p-8 space-y-6">
@@ -32,12 +55,25 @@ export default function WorkflowsPage() {
             type="search"
             placeholder="Buscar workflows..."
             className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Workflows Grid */}
-      {workflows.length === 0 ? (
+      {/* Error */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {error}
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && workflows.length === 0 ? (
+        <div className="flex justify-center py-12">
+          <Loading size="lg" />
+        </div>
+      ) : filteredWorkflows.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <p className="text-gray-500 mb-4">No hay workflows todavía</p>
@@ -49,7 +85,7 @@ export default function WorkflowsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {workflows.map((workflow) => (
+          {filteredWorkflows.map((workflow) => (
             <Card key={workflow.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -66,17 +102,29 @@ export default function WorkflowsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <Badge variant="secondary">
-                    {workflow.steps || 0} pasos
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">
+                      {workflow.nodes.length} pasos
+                    </Badge>
+                    {workflow.executionCount > 0 && (
+                      <Badge variant={workflow.successCount > workflow.failureCount ? 'success' : 'default'}>
+                        {workflow.successCount}/{workflow.executionCount}
+                      </Badge>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="icon" onClick={() => navigate(`/workflows/${workflow.id}`)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" title="Ejecutar">
                       <Play className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleDelete(workflow.id)}
+                      title="Eliminar"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

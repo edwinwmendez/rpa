@@ -1,28 +1,28 @@
 // Agent Client - Comunicación con agente local
 import axios from 'axios';
 
-export interface AgentStatus {
+export type AgentStatus = {
   status: 'connected' | 'disconnected';
   version?: string;
   os?: string;
   python?: string;
   lastSeen?: string;
-}
+};
 
-export interface WorkflowExecutionResult {
+export type WorkflowExecutionResult = {
   status: 'running' | 'completed' | 'error';
   progress?: number;
   currentStep?: number;
   totalSteps?: number;
   logs?: string[];
   error?: string;
-}
+};
 
 class AgentClient {
-  private baseURL = 'http://localhost:5000';
+  private baseURL = import.meta.env.VITE_AGENT_URL || 'http://localhost:5000';
   private client = axios.create({
     baseURL: this.baseURL,
-    timeout: 30000,
+    timeout: Number(import.meta.env.VITE_AGENT_TIMEOUT) || 30000,
     headers: {
       'Content-Type': 'application/json'
     }
@@ -79,6 +79,44 @@ class AgentClient {
       return response.data as Record<string, unknown>;
     } catch (error) {
       throw new Error('No se pudo conectar con el agente');
+    }
+  }
+
+  // Guardar archivo localmente en el agente
+  async saveFile(
+    filename: string,
+    content: string,
+    fileType: 'csv' | 'xlsx' | 'xls' = 'csv'
+  ): Promise<{ success: boolean; filePath?: string; relativePath?: string; error?: string }> {
+    try {
+      const response = await this.client.post('/files/save', {
+        filename,
+        content,
+        fileType,
+      });
+      return response.data;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al guardar archivo';
+      return {
+        success: false,
+        error: message,
+      };
+    }
+  }
+
+  // Eliminar archivo localmente en el agente
+  async deleteFile(filePath: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await this.client.post('/files/delete', {
+        filePath,
+      });
+      return response.data;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al eliminar archivo';
+      return {
+        success: false,
+        error: message,
+      };
     }
   }
 }

@@ -10,7 +10,8 @@
     "strict": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "composite": true,
+    "noEmit": false
   },
   "include": ["vite.config.ts", "tailwind.config.js", "eslint.config.js"]
 }

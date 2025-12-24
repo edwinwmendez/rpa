@@ -1,21 +1,48 @@
 // Dashboard Page
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FolderOpen, Globe, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, FolderOpen, Globe, Clock, CheckCircle, XCircle, Edit, Play } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Loading } from '../components/ui/loading';
 import { useAgentStore } from '../stores/agentStore';
+import { useAuthStore } from '../stores/authStore';
+import { useWorkflowsStore } from '../stores/workflowsStore';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { status } = useAgentStore();
+  const { user } = useAuthStore();
+  const { workflows, fetchWorkflows, loading } = useWorkflowsStore();
   const isConnected = status.status === 'connected';
 
+  useEffect(() => {
+    if (user) {
+      fetchWorkflows(user.uid);
+    }
+  }, [user, fetchWorkflows]);
+
+  // Calcular estadísticas
+  const totalWorkflows = workflows.length;
+  const totalExecutions = workflows.reduce((sum, w) => sum + w.executionCount, 0);
+  const totalSuccess = workflows.reduce((sum, w) => sum + w.successCount, 0);
+  const totalFailures = workflows.reduce((sum, w) => sum + w.failureCount, 0);
+
+  // Obtener workflows recientes
+  const recentWorkflows = workflows
+    .sort((a, b) => {
+      const aTime = a.lastExecutedAt?.toMillis() || a.updatedAt.toMillis();
+      const bTime = b.lastExecutedAt?.toMillis() || b.updatedAt.toMillis();
+      return bTime - aTime;
+    })
+    .slice(0, 5);
+
   const stats = [
-    { label: 'Workflows Totales', value: '0', icon: FolderOpen, color: 'text-blue-600' },
-    { label: 'Ejecuciones Hoy', value: '0', icon: Clock, color: 'text-green-600' },
-    { label: 'Exitosas', value: '0', icon: CheckCircle, color: 'text-green-600' },
-    { label: 'Fallidas', value: '0', icon: XCircle, color: 'text-red-600' },
+    { label: 'Workflows Totales', value: totalWorkflows.toString(), icon: FolderOpen, color: 'text-blue-600' },
+    { label: 'Ejecuciones Totales', value: totalExecutions.toString(), icon: Clock, color: 'text-green-600' },
+    { label: 'Exitosas', value: totalSuccess.toString(), icon: CheckCircle, color: 'text-green-600' },
+    { label: 'Fallidas', value: totalFailures.toString(), icon: XCircle, color: 'text-red-600' },
   ];
 
   return (
@@ -108,17 +135,66 @@ export default function Dashboard() {
           <CardDescription>Últimos workflows ejecutados o modificados</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-gray-500">
-            <FolderOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p>No hay workflows todavía</p>
-            <Button
-              className="mt-4"
-              onClick={() => navigate('/workflows/new')}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Primer Workflow
-            </Button>
-          </div>
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loading size="lg" />
+            </div>
+          ) : recentWorkflows.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <FolderOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p>No hay workflows todavía</p>
+              <Button
+                className="mt-4"
+                onClick={() => navigate('/workflows/new')}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Crear Primer Workflow
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentWorkflows.map((workflow) => (
+                <div
+                  key={workflow.id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">{workflow.name}</h3>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                      <span>{workflow.nodes.length} pasos</span>
+                      {workflow.lastExecutedAt && (
+                        <span>
+                          Última ejecución: {new Date(workflow.lastExecutedAt.toMillis()).toLocaleDateString()}
+                        </span>
+                      )}
+                      {workflow.executionCount > 0 && (
+                        <Badge variant={workflow.successCount > workflow.failureCount ? 'success' : 'default'}>
+                          {workflow.successCount}/{workflow.executionCount} exitosas
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/workflows/${workflow.id}`)}
+                      title="Editar"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Ejecutar"
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
