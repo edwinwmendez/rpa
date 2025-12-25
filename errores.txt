@@ -1,0 +1,107 @@
+Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+firebase.ts? [sm]:45 
+        
+      
+        
+        
+      
+        
+      
+       
+        
+       POST https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyBn4GJP3LPZQBSzgYauqGh8UtLkGFbiINQ net::ERR_CONNECTION_CLOSED
+(anónimo) @ index.ts:189
+await in (anónimo) (asincrónica)
+_performFetchWithErrorHandling @ index.ts:206
+_performApiRequest @ index.ts:146
+getAccountInfo @ account.ts:93
+_reloadWithoutSaving @ reload.ts:36
+await in _reloadWithoutSaving (asincrónica)
+reloadAndSetCurrentUserOrClear @ auth_impl.ts:383
+initializeCurrentUser @ auth_impl.ts:320
+await in initializeCurrentUser (asincrónica)
+(anónimo) @ auth_impl.ts:189
+Promise.then (asincrónica)
+queue @ auth_impl.ts:804
+_initializeWithPersistence @ auth_impl.ts:163
+_initializeAuthInstance @ initialize.ts:86
+(anónimo) @ register.ts:94
+getOrInitializeService @ provider.ts:318
+initialize @ provider.ts:242
+initializeAuth @ initialize.ts:66
+getAuth @ index.ts:83
+(anónimo) @ firebase.ts? [sm]:45
+Show 16 more frames
+authStore.ts? [sm]:45 Perfil encontrado para usuario: xUF6NiR4DQbCuXDaFU1wQXfAQXy2
+react-dom-client.development.js:6099 
+        
+       Uncaught Error: Objects are not valid as a React child (found: object with keys {machine, release, system, version}). If you meant to render a collection of children, use an array instead.
+    at throwOnInvalidObjectTypeImpl (react-dom-client.development.js:6099:13)
+    at throwOnInvalidObjectType (react-dom-client.development.js:6113:11)
+    at createChild (react-dom-client.development.js:6401:11)
+    at reconcileChildrenArray (react-dom-client.development.js:6670:25)
+    at reconcileChildFibersImpl (react-dom-client.development.js:6993:30)
+    at react-dom-client.development.js:7098:33
+    at reconcileChildren (react-dom-client.development.js:9702:13)
+    at beginWork (react-dom-client.development.js:12049:13)
+    at runWithFiberInDEV (react-dom-client.development.js:871:30)
+    at performUnitOfWork (react-dom-client.development.js:17641:22)
+throwOnInvalidObjectTypeImpl @ react-dom-client.development.js:6099
+throwOnInvalidObjectType @ react-dom-client.development.js:6113
+createChild @ react-dom-client.development.js:6401
+reconcileChildrenArray @ react-dom-client.development.js:6670
+reconcileChildFibersImpl @ react-dom-client.development.js:6993
+(anónimo) @ react-dom-client.development.js:7098
+reconcileChildren @ react-dom-client.development.js:9702
+beginWork @ react-dom-client.development.js:12049
+runWithFiberInDEV @ react-dom-client.development.js:871
+performUnitOfWork @ react-dom-client.development.js:17641
+workLoopSync @ react-dom-client.development.js:17469
+renderRootSync @ react-dom-client.development.js:17450
+performWorkOnRoot @ react-dom-client.development.js:16583
+performSyncWorkOnRoot @ react-dom-client.development.js:18972
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18814
+processRootScheduleInMicrotask @ react-dom-client.development.js:18853
+(anónimo) @ react-dom-client.development.js:18991
+<span> (asincrónica)
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
+AgentStatusBanner @ AgentStatusBanner.tsx? [sm]:47
+react_stack_bottom_frame @ react-dom-client.development.js:25904
+renderWithHooksAgain @ react-dom-client.development.js:7762
+renderWithHooks @ react-dom-client.development.js:7674
+updateFunctionComponent @ react-dom-client.development.js:10166
+beginWork @ react-dom-client.development.js:11778
+runWithFiberInDEV @ react-dom-client.development.js:871
+performUnitOfWork @ react-dom-client.development.js:17641
+workLoopSync @ react-dom-client.development.js:17469
+renderRootSync @ react-dom-client.development.js:17450
+performWorkOnRoot @ react-dom-client.development.js:16504
+performSyncWorkOnRoot @ react-dom-client.development.js:18972
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18814
+processRootScheduleInMicrotask @ react-dom-client.development.js:18853
+(anónimo) @ react-dom-client.development.js:18991
+<AgentStatusBanner> (asincrónica)
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
+App @ App.tsx? [sm]:43
+react_stack_bottom_frame @ react-dom-client.development.js:25904
+renderWithHooksAgain @ react-dom-client.development.js:7762
+renderWithHooks @ react-dom-client.development.js:7674
+updateFunctionComponent @ react-dom-client.development.js:10166
+beginWork @ react-dom-client.development.js:11778
+runWithFiberInDEV @ react-dom-client.development.js:871
+performUnitOfWork @ react-dom-client.development.js:17641
+workLoopSync @ react-dom-client.development.js:17469
+renderRootSync @ react-dom-client.development.js:17450
+performWorkOnRoot @ react-dom-client.development.js:16504
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:18957
+performWorkUntilDeadline @ scheduler.development.js:45
+<App> (asincrónica)
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
+(anónimo) @ main.tsx? [sm]:8
+Show 46 more frames
+hook.js:608 
+        
+       An error occurred in the <span> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
