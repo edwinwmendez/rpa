@@ -321,33 +321,64 @@ class ElementPicker:
             
             # Loop de detección de elementos
             loop_count = 0
+            last_update_time = 0
+            update_interval = 0.1  # Actualizar overlay máximo cada 100ms (reducir access violations)
+            
             while not self._stop_event.is_set():
                 try:
+                    current_time = time.time()
+                    
                     # Obtener posición del mouse
                     point = POINT()
                     self._user32.GetCursorPos(ctypes.byref(point))
                     
-                    # Obtener elemento bajo el cursor
-                    element = self._get_element_at_point(point.x, point.y)
+                    # Solo intentar obtener elemento si ha pasado el intervalo (throttling)
+                    should_update = (current_time - last_update_time) >= update_interval
+                    
+                    if should_update:
+                        # Obtener elemento bajo el cursor
+                        element = self._get_element_at_point(point.x, point.y)
+                    else:
+                        element = None  # No actualizar en esta iteración
                     
                     if element:
-                        # Obtener rectángulo del elemento
+                        # Obtener rectángulo del elemento con validación
                         try:
-                            rect = element.rectangle()
-                            new_rect = (rect.left, rect.top, rect.right, rect.bottom)
-                            
-                            # Solo actualizar overlay si el rectángulo cambió
-                            if new_rect != self._current_element_rect:
-                                self._current_element_rect = new_rect
-                                self._update_overlay(new_rect)
-                                if loop_count % 20 == 0:  # Log cada segundo aprox
-                                    logger.debug("Overlay actualizado: %s", new_rect)
+                            # Validar que el elemento sea válido antes de acceder
+                            if hasattr(element, 'rectangle'):
+                                rect = element.rectangle()
+                                # Validar que el rectángulo tenga valores válidos
+                                if hasattr(rect, 'left') and hasattr(rect, 'top') and hasattr(rect, 'right') and hasattr(rect, 'bottom'):
+                                    new_rect = (int(rect.left), int(rect.top), int(rect.right), int(rect.bottom))
+                                    
+                                    # Validar que el rectángulo sea razonable
+                                    if (new_rect[2] > new_rect[0] and new_rect[3] > new_rect[1] and 
+                                        new_rect[0] >= 0 and new_rect[1] >= 0 and
+                                        new_rect[2] < 10000 and new_rect[3] < 10000):
+                                        
+                                        # Solo actualizar overlay si el rectángulo cambió
+                                        if new_rect != self._current_element_rect:
+                                            self._current_element_rect = new_rect
+                                            self._update_overlay(new_rect)
+                                            last_update_time = current_time
+                                            if loop_count % 20 == 0:  # Log cada segundo aprox
+                                                logger.debug("Overlay actualizado: %s", new_rect)
+                        except (AttributeError, OSError, ctypes.ArgumentError) as e:
+                            # Errores de acceso a memoria - ignorar silenciosamente
+                            pass
                         except Exception as e:
-                            logger.debug("Error obteniendo rectángulo: %s", e)
+                            # Otros errores - log solo si es crítico
+                            if loop_count % 100 == 0:  # Log cada 5 segundos aprox
+                                logger.debug("Error obteniendo rectángulo: %s", e)
                     else:
                         # Si no hay elemento, ocultar overlay
-                        if self._overlay_hwnd:
-                            self._user32.ShowWindow(self._overlay_hwnd, 0)  # SW_HIDE
+                        if should_update and self._overlay_hwnd and self._current_element_rect:
+                            try:
+                                self._user32.ShowWindow(self._overlay_hwnd, 0)  # SW_HIDE
+                                self._current_element_rect = None
+                                last_update_time = current_time
+                            except Exception:
+                                pass
                     
                     # Procesar mensajes de Windows (necesario para hooks)
                     # Limitar a un máximo de mensajes por iteración para evitar saturación
@@ -790,31 +821,49 @@ class ElementPicker:
         """
         try:
             left, top, right, bottom = rect
+            
+            # Validar valores del rectángulo
+            if not all(isinstance(v, (int, float)) for v in rect):
+                return
+            
             width = right - left
             height = bottom - top
             
-            # Mínimo tamaño visible
-            if width < 2 or height < 2:
+            # Mínimo tamaño visible y máximo razonable
+            if width < 2 or height < 2 or width > 10000 or height > 10000:
+                return
+            
+            # Validar coordenadas
+            if left < 0 or top < 0 or right < 0 or bottom < 0:
                 return
             
             if self._overlay_hwnd is None:
                 self._create_overlay()
             
             if self._overlay_hwnd:
-                # Mover y redimensionar overlay
-                # SWP_NOACTIVATE = 0x0010, SWP_SHOWWINDOW = 0x0040
-                self._user32.SetWindowPos(
-                    self._overlay_hwnd,
-                    -1,  # HWND_TOPMOST
-                    left, top, width, height,
-                    0x0010 | 0x0040
-                )
+                try:
+                    # Mover y redimensionar overlay
+                    # SWP_NOACTIVATE = 0x0010, SWP_SHOWWINDOW = 0x0040
+                    result = self._user32.SetWindowPos(
+                        self._overlay_hwnd,
+                        -1,  # HWND_TOPMOST
+                        int(left), int(top), int(width), int(height),
+                        0x0010 | 0x0040
+                    )
+                    
+                    if result:
+                        # Forzar repintado solo si SetWindowPos fue exitoso
+                        self._user32.InvalidateRect(self._overlay_hwnd, None, True)
+                        self._user32.UpdateWindow(self._overlay_hwnd)
+                except (OSError, ctypes.ArgumentError):
+                    # Errores de acceso a memoria - ignorar
+                    pass
                 
-                # Forzar repintado
-                self._user32.InvalidateRect(self._overlay_hwnd, None, True)
-                self._user32.UpdateWindow(self._overlay_hwnd)
-                
+        except (AttributeError, OSError, ctypes.ArgumentError) as e:
+            # Errores de acceso a memoria - ignorar silenciosamente
+            pass
         except Exception as e:
+            # Otros errores - log solo ocasionalmente
             logger.debug("Error actualizando overlay: %s", e)
     
     def _create_overlay(self) -> None:
@@ -920,7 +969,19 @@ class ElementPicker:
         """Destruye la ventana overlay."""
         try:
             if self._overlay_hwnd:
-                self._user32.DestroyWindow(self._overlay_hwnd)
+                try:
+                    # Intentar ocultar primero
+                    self._user32.ShowWindow(self._overlay_hwnd, 0)  # SW_HIDE
+                except Exception:
+                    pass
+                
+                try:
+                    # Luego destruir
+                    self._user32.DestroyWindow(self._overlay_hwnd)
+                except (OSError, ctypes.ArgumentError):
+                    # Errores de acceso a memoria - ignorar
+                    pass
+                
                 self._overlay_hwnd = None
                 self._current_element_rect = None
                 logger.debug("Overlay destruido")
