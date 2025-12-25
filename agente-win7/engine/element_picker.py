@@ -105,10 +105,10 @@ class WNDCLASSW(ctypes.Structure):
         ("lpfnWndProc", WNDPROC),  # Tipo de función correcto
         ("cbClsExtra", ctypes.c_int),
         ("cbWndExtra", ctypes.c_int),
-        ("hInstance", ctypes.wintypes.HANDLE),  # HINSTANCE es un HANDLE
-        ("hIcon", ctypes.wintypes.HANDLE),      # HICON es un HANDLE
-        ("hCursor", ctypes.wintypes.HANDLE),    # HCURSOR es un HANDLE
-        ("hbrBackground", ctypes.wintypes.HANDLE),  # HBRUSH es un HANDLE
+        ("hInstance", ctypes.c_void_p),  # HINSTANCE - usar c_void_p para compatibilidad
+        ("hIcon", ctypes.c_void_p),      # HICON - usar c_void_p para compatibilidad
+        ("hCursor", ctypes.c_void_p),    # HCURSOR - usar c_void_p para compatibilidad
+        ("hbrBackground", ctypes.c_void_p),  # HBRUSH - usar c_void_p para compatibilidad
         ("lpszMenuName", ctypes.c_wchar_p),
         ("lpszClassName", ctypes.c_wchar_p)
     ]
