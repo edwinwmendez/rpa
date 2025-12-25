@@ -271,10 +271,19 @@ class ElementPicker:
     def _picker_loop(self) -> None:
         """Loop principal del picker que corre en thread separado."""
         try:
+            logger.info("Iniciando picker loop...")
+            
             # Instalar hooks
+            logger.info("Instalando hooks de teclado y mouse...")
             self._install_hooks()
             
+            if not self._keyboard_hook or not self._mouse_hook:
+                raise Exception("No se pudieron instalar los hooks. ¿Ejecutaste como administrador?")
+            
+            logger.info("Hooks instalados correctamente. Overlay activo.")
+            
             # Loop de detección de elementos
+            loop_count = 0
             while not self._stop_event.is_set():
                 try:
                     # Obtener posición del mouse
@@ -294,21 +303,37 @@ class ElementPicker:
                             if new_rect != self._current_element_rect:
                                 self._current_element_rect = new_rect
                                 self._update_overlay(new_rect)
-                        except Exception:
-                            pass
+                                if loop_count % 20 == 0:  # Log cada segundo aprox
+                                    logger.debug("Overlay actualizado: %s", new_rect)
+                        except Exception as e:
+                            logger.debug("Error obteniendo rectángulo: %s", e)
+                    else:
+                        # Si no hay elemento, ocultar overlay
+                        if self._overlay_hwnd:
+                            self._user32.ShowWindow(self._overlay_hwnd, 0)  # SW_HIDE
+                    
+                    # Procesar mensajes de Windows (necesario para hooks)
+                    msg = ctypes.wintypes.MSG()
+                    while self._user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):  # PM_REMOVE
+                        self._user32.TranslateMessage(ctypes.byref(msg))
+                        self._user32.DispatchMessageW(ctypes.byref(msg))
                     
                     # Pequeña pausa para no saturar CPU
                     time.sleep(0.05)
+                    loop_count += 1
                     
                 except Exception as e:
-                    logger.debug("Error en picker loop: %s", e)
+                    logger.warning("Error en picker loop: %s", e)
                     time.sleep(0.1)
+            
+            logger.info("Picker loop terminado")
             
         except Exception as e:
             self._status = self.STATUS_ERROR
             self._error_message = str(e)
-            logger.error("Error en picker loop: %s", e)
+            logger.error("Error crítico en picker loop: %s", e, exc_info=True)
         finally:
+            logger.info("Limpiando recursos del picker...")
             self._cleanup_hooks()
             self._destroy_overlay()
     
@@ -750,6 +775,8 @@ class ElementPicker:
     def _create_overlay(self) -> None:
         """Crea la ventana overlay transparente."""
         try:
+            logger.info("Creando ventana overlay...")
+            
             # Registrar clase de ventana
             wnd_class_name = "RPAElementPickerOverlay"
             
@@ -766,7 +793,11 @@ class ElementPicker:
             wnd_class.hbrBackground = self._gdi32.CreateSolidBrush(COLOR_RED)
             
             # Intentar registrar (puede fallar si ya existe)
-            self._user32.RegisterClassW(ctypes.byref(wnd_class))
+            result = self._user32.RegisterClassW(ctypes.byref(wnd_class))
+            if result == 0:
+                error_code = self._kernel32.GetLastError()
+                if error_code != 1410:  # ERROR_CLASS_ALREADY_EXISTS
+                    logger.warning("Error registrando clase de ventana: %d", error_code)
             
             # Crear ventana
             ex_style = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
@@ -792,11 +823,15 @@ class ElementPicker:
                     LWA_ALPHA
                 )
                 
-                logger.debug("Overlay creado: %s", self._overlay_hwnd)
+                logger.info("✅ Overlay creado exitosamente: %s", self._overlay_hwnd)
+            else:
+                error_code = self._kernel32.GetLastError()
+                raise Exception(f"No se pudo crear overlay. Error: {error_code}")
             
         except Exception as e:
-            logger.error("Error creando overlay: %s", e)
+            logger.error("❌ Error creando overlay: %s", e, exc_info=True)
             self._overlay_hwnd = None
+            raise
     
     def _overlay_wnd_proc(self, hwnd, msg, wparam, lparam):
         """Procedimiento de ventana para el overlay."""
@@ -848,6 +883,8 @@ class ElementPicker:
     def _install_hooks(self) -> None:
         """Instala los hooks de teclado y mouse."""
         try:
+            logger.info("Preparando callbacks de hooks...")
+            
             # Callback para keyboard hook
             HOOKPROC = ctypes.WINFUNCTYPE(
                 ctypes.c_long,
@@ -859,6 +896,7 @@ class ElementPicker:
             self._keyboard_callback = HOOKPROC(self._keyboard_hook_proc)
             self._mouse_callback = HOOKPROC(self._mouse_hook_proc)
             
+            logger.info("Instalando keyboard hook...")
             # Instalar keyboard hook
             self._keyboard_hook = self._user32.SetWindowsHookExW(
                 WH_KEYBOARD_LL,
@@ -867,6 +905,7 @@ class ElementPicker:
                 0
             )
             
+            logger.info("Instalando mouse hook...")
             # Instalar mouse hook
             self._mouse_hook = self._user32.SetWindowsHookExW(
                 WH_MOUSE_LL,
@@ -876,15 +915,20 @@ class ElementPicker:
             )
             
             if self._keyboard_hook and self._mouse_hook:
-                logger.debug("Hooks instalados correctamente")
+                logger.info("✅ Hooks instalados correctamente (keyboard: %s, mouse: %s)", 
+                           self._keyboard_hook, self._mouse_hook)
             else:
-                logger.warning("No se pudieron instalar todos los hooks")
-            
-            # Procesar mensajes en un loop corto
-            self._process_messages()
+                error_msg = "No se pudieron instalar todos los hooks"
+                if not self._keyboard_hook:
+                    error_msg += " (keyboard hook falló)"
+                if not self._mouse_hook:
+                    error_msg += " (mouse hook falló)"
+                logger.error("❌ %s. ¿Ejecutaste como administrador?", error_msg)
+                raise Exception(error_msg)
             
         except Exception as e:
-            logger.error("Error instalando hooks: %s", e)
+            logger.error("Error instalando hooks: %s", e, exc_info=True)
+            raise
     
     def _process_messages(self) -> None:
         """Procesa mensajes de Windows para los hooks."""

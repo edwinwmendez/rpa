@@ -420,10 +420,10 @@ def start_picker():
         success = element_picker.start(mode=mode)
         
         if success:
-            return jsonify({
-                'status': 'started',
+        return jsonify({
+            'status': 'started',
                 'mode': mode
-            }), 200
+        }), 200
         else:
             return jsonify({
                 'status': 'error',
