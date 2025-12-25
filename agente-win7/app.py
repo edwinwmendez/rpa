@@ -421,7 +421,7 @@ def start_picker():
         
         if success:
             return jsonify({
-            'status': 'started',
+                'status': 'started',
                 'mode': mode
         }), 200
         else:
