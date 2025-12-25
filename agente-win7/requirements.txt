@@ -29,3 +29,4 @@ pywin32==305              # COM automation para Excel (si está instalado)
 # Utilities
 requests==2.31.0          # HTTP client (útil para APIs futuras)
 python-dateutil==2.8.2    # Fecha/hora utilities (dependencia de pandas)
+psutil==5.9.5             # Información de procesos (process_name para element picker)

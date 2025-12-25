@@ -36,12 +36,13 @@ CORS(app, origins=[
 
 # Importar motores de automatización
 try:
-    from engine import DesktopEngine, ExcelEngine, WorkflowExecutor
+    from engine import DesktopEngine, ExcelEngine, WorkflowExecutor, ElementPicker
 
     # Inicializar motores globales
     desktop_engine = DesktopEngine(timeout=30)
     excel_engine = ExcelEngine(use_com=False)  # Pandas por defecto
     executor = WorkflowExecutor(desktop_engine, excel_engine)
+    element_picker = ElementPicker()  # Singleton
 
     logger.info("✅ Motores de automatización inicializados correctamente")
 
@@ -50,6 +51,7 @@ except Exception as e:
     desktop_engine = None
     excel_engine = None
     executor = None
+    element_picker = None
 
 
 # ==================== HEALTH CHECK ====================
@@ -378,7 +380,11 @@ def list_files():
 @app.route('/picker/start', methods=['POST'])
 def start_picker():
     """
-    Inicia el selector de elementos (stub para compatibilidad con frontend)
+    Inicia el selector de elementos para captura visual.
+    
+    El usuario podrá mover el mouse sobre la aplicación y ver
+    elementos resaltados en rojo. CTRL+Click captura el elemento.
+    ESC cancela la captura.
     
     Body:
         {
@@ -392,21 +398,128 @@ def start_picker():
         }
     """
     try:
+        if not element_picker:
+            return jsonify({
+                'status': 'error',
+                'error': 'Element picker no disponible'
+            }), 500
+        
         data = request.json or {}
         mode = data.get('mode', 'desktop')
         
         logger.info(f"Iniciando element picker en modo: {mode}")
         
-        # TODO: Implementar element picker real
-        # Por ahora, retornamos éxito para compatibilidad
-        return jsonify({
-            'status': 'started',
-            'mode': mode,
-            'message': 'Element picker iniciado (implementación pendiente)'
-        }), 200
+        # Iniciar el picker
+        success = element_picker.start(mode=mode)
+        
+        if success:
+            return jsonify({
+                'status': 'started',
+                'mode': mode
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'error': 'No se pudo iniciar el element picker'
+            }), 500
 
     except Exception as e:
         logger.error(f"Error iniciando element picker: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+
+@app.route('/picker/status', methods=['GET'])
+def get_picker_status():
+    """
+    Obtiene el estado actual del element picker.
+    
+    Returns:
+        {
+            "status": "idle" | "waiting" | "captured" | "error",
+            "error": "mensaje de error"  // Solo si status == "error"
+        }
+    """
+    try:
+        if not element_picker:
+            return jsonify({
+                'status': 'error',
+                'error': 'Element picker no disponible'
+            }), 500
+        
+        result = element_picker.get_status()
+        return jsonify(result), 200
+
+    except Exception as e:
+        logger.error(f"Error obteniendo estado del picker: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+
+@app.route('/picker/result', methods=['GET'])
+def get_picker_result():
+    """
+    Obtiene el resultado de la captura (elemento seleccionado).
+    
+    Solo retorna datos si el status es 'captured'.
+    
+    Returns:
+        {
+            "status": "success" | "error",
+            "selector": "auto_id:btnGuardar",
+            "properties": {
+                "auto_id": "btnGuardar",
+                "name": "Guardar",
+                "class_name": "Button",
+                "control_type": "Button",
+                "rectangle": {"left": 100, "top": 200, "right": 200, "bottom": 230},
+                "is_enabled": true,
+                "is_visible": true,
+                "window_title": "Mi Aplicación"
+            },
+            "screenshot": "base64_encoded_png..."
+        }
+    """
+    try:
+        if not element_picker:
+            return jsonify({
+                'status': 'error',
+                'error': 'Element picker no disponible'
+            }), 500
+        
+        result = element_picker.get_result()
+        return jsonify(result), 200
+
+    except Exception as e:
+        logger.error(f"Error obteniendo resultado del picker: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+
+@app.route('/picker/stop', methods=['POST'])
+def stop_picker():
+    """
+    Detiene el element picker y limpia recursos.
+    
+    Returns:
+        {
+            "status": "stopped"
+        }
+    """
+    try:
+        if not element_picker:
+            return jsonify({
+                'status': 'error',
+                'error': 'Element picker no disponible'
+            }), 500
+        
+        element_picker.stop()
+        
+        logger.info("Element picker detenido")
+        
+        return jsonify({
+            'status': 'stopped'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error deteniendo element picker: {e}")
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 

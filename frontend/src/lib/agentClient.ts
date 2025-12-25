@@ -1,5 +1,11 @@
 // Agent Client - Comunicación con agente local
 import axios from 'axios';
+import type {
+  PickerStatusResponse,
+  PickerResult,
+  PickerStartResponse,
+  PickerStopResponse,
+} from '../types/picker';
 
 export type AgentStatus = {
   status: 'connected' | 'disconnected';
@@ -78,9 +84,61 @@ class AgentClient {
     }
   }
 
-  // Iniciar selector de elementos
-  async startElementPicker(mode: 'desktop' | 'web' = 'desktop'): Promise<void> {
-    await this.client.post('/picker/start', { mode });
+  // ==================== ELEMENT PICKER ====================
+
+  /**
+   * Inicia el selector de elementos.
+   * El usuario podrá mover el mouse sobre la aplicación y ver
+   * elementos resaltados en rojo. CTRL+Click captura el elemento.
+   */
+  async startElementPicker(mode: 'desktop' | 'web' = 'desktop'): Promise<PickerStartResponse> {
+    try {
+      const response = await this.client.post('/picker/start', { mode });
+      return response.data;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al iniciar picker';
+      return { status: 'error', error: message };
+    }
+  }
+
+  /**
+   * Obtiene el estado actual del picker.
+   * Usar para polling mientras el usuario selecciona elemento.
+   */
+  async getPickerStatus(): Promise<PickerStatusResponse> {
+    try {
+      const response = await this.client.get('/picker/status');
+      return response.data;
+    } catch (error) {
+      return { status: 'error', error: 'Error obteniendo estado del picker' };
+    }
+  }
+
+  /**
+   * Obtiene el resultado de la captura (elemento seleccionado).
+   * Solo llamar cuando getPickerStatus retorna status='captured'.
+   */
+  async getPickerResult(): Promise<PickerResult> {
+    try {
+      const response = await this.client.get('/picker/result');
+      return response.data;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error obteniendo resultado';
+      return { status: 'error', error: message };
+    }
+  }
+
+  /**
+   * Detiene el picker y limpia recursos.
+   * Llamar siempre al cerrar el modal o cancelar.
+   */
+  async stopPicker(): Promise<PickerStopResponse> {
+    try {
+      const response = await this.client.post('/picker/stop');
+      return response.data;
+    } catch (error) {
+      return { status: 'error', error: 'Error deteniendo picker' };
+    }
   }
 
   // Obtener logs en tiempo real

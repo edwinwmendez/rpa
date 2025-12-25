@@ -122,6 +122,8 @@ class DesktopEngine:
                 - title: Título/nombre del elemento
                 - control_type: Tipo de control (Button, Edit, etc.)
                 - class_name: Nombre de clase del control
+                - found_index: Índice del elemento si hay múltiples (0-based)
+                - coordinates: [x, y] para click directo por coordenadas
 
         Returns:
             Elemento encontrado
@@ -129,12 +131,21 @@ class DesktopEngine:
         Raises:
             ElementNotFoundError: Si no se encuentra el elemento
         """
+        # Caso especial: coordenadas (no requiere app conectada)
+        if selector.get('coordinates'):
+            coords = selector['coordinates']
+            if isinstance(coords, list) and len(coords) == 2:
+                # Retornar un wrapper especial para coordenadas
+                # El método click() manejará esto
+                return {'type': 'coordinates', 'x': coords[0], 'y': coords[1]}
+        
         if not self.current_app:
             raise DesktopEngineError("No hay aplicación conectada. Use connect_to_window() primero")
 
         try:
             # Construir criterios de búsqueda
             criteria = {}
+            found_index = selector.get('found_index', 0)
 
             if selector.get('auto_id'):
                 criteria['auto_id'] = selector['auto_id']
@@ -149,10 +160,58 @@ class DesktopEngine:
                 raise ValueError("Selector vacío. Proporcione al menos un criterio")
 
             # Buscar elemento
-            element = self.current_app.window(**criteria)
+            window = self.current_app.window()
+            
+            # Si hay found_index especificado, buscar todos los elementos que coincidan
+            if found_index is not None and found_index >= 0:
+                try:
+                    # Buscar todos los elementos descendientes que coincidan con los criterios
+                    # Usar child_window() para obtener hijos directos primero
+                    all_matches = []
+                    
+                    # Buscar en hijos directos
+                    try:
+                        children = window.children()
+                        for child in children:
+                            if self._matches_criteria(child, criteria):
+                                all_matches.append(child)
+                    except Exception:
+                        pass
+                    
+                    # Si no encontramos suficientes, buscar en descendientes más profundos
+                    if len(all_matches) <= found_index:
+                        try:
+                            # Buscar en todos los descendientes
+                            all_descendants = window.descendants()
+                            for desc in all_descendants:
+                                if self._matches_criteria(desc, criteria):
+                                    # Evitar duplicados
+                                    if desc not in all_matches:
+                                        all_matches.append(desc)
+                        except Exception:
+                            pass
+                    
+                    # Seleccionar elemento por índice
+                    if found_index < len(all_matches):
+                        element = all_matches[found_index]
+                    else:
+                        raise ElementNotFoundError(
+                            f"Índice {found_index} fuera de rango. "
+                            f"Solo se encontraron {len(all_matches)} elementos que coinciden"
+                        )
+                except ElementNotFoundError:
+                    raise
+                except Exception as e:
+                    # Si falla la búsqueda por índice, intentar sin índice como fallback
+                    logger.warning(f"Error buscando por índice {found_index}, intentando sin índice: {e}")
+                    element = window.child_window(**criteria)
+            else:
+                # Buscar primer elemento (sin índice)
+                element = window.child_window(**criteria)
+            
             element.wait('exists', timeout=self.timeout)
 
-            logger.info(f"Elemento encontrado: {criteria}")
+            logger.info(f"Elemento encontrado: {criteria} (found_index={found_index})")
             return element
 
         except findwindows.ElementNotFoundError as e:
@@ -174,6 +233,19 @@ class DesktopEngine:
         """
         try:
             element = self.find_element(selector)
+
+            # Caso especial: click por coordenadas
+            if isinstance(element, dict) and element.get('type') == 'coordinates':
+                import pywinauto.mouse as mouse
+                x, y = element['x'], element['y']
+                if double:
+                    mouse.double_click(coords=(x, y))
+                    logger.info(f"Doble click en coordenadas: ({x}, {y})")
+                else:
+                    mouse.click(coords=(x, y))
+                    logger.info(f"Click en coordenadas: ({x}, {y})")
+                time.sleep(0.5)
+                return
 
             # Asegurar que el elemento esté habilitado y visible
             element.wait('enabled', timeout=10)
@@ -325,6 +397,64 @@ class DesktopEngine:
                 self.current_app = None
             except Exception as e:
                 logger.error(f"Error cerrando aplicación: {e}")
+
+    def _matches_criteria(self, element: UIAWrapper, criteria: Dict[str, Any]) -> bool:
+        """
+        Verifica si un elemento coincide con los criterios dados.
+        
+        Args:
+            element: Elemento a verificar
+            criteria: Criterios de búsqueda
+            
+        Returns:
+            True si coincide con TODOS los criterios especificados, False si no
+        """
+        try:
+            # AutomationId (debe coincidir exactamente)
+            if criteria.get('auto_id'):
+                try:
+                    element_auto_id = element.automation_id()
+                    if element_auto_id != criteria['auto_id']:
+                        return False
+                except Exception:
+                    # Si el elemento no tiene automation_id pero lo requerimos, no coincide
+                    return False
+            
+            # Title/Name (búsqueda parcial - contiene el texto)
+            if criteria.get('title'):
+                try:
+                    element_text = element.window_text()
+                    if criteria['title'] not in element_text:
+                        return False
+                except Exception:
+                    # Si no podemos obtener el texto pero lo requerimos, no coincide
+                    return False
+            
+            # Control Type (debe coincidir exactamente)
+            if criteria.get('control_type'):
+                try:
+                    element_type = element.element_info.control_type
+                    if element_type != criteria['control_type']:
+                        return False
+                except Exception:
+                    # Si no podemos obtener el tipo pero lo requerimos, no coincide
+                    return False
+            
+            # Class Name (debe coincidir exactamente)
+            if criteria.get('class_name'):
+                try:
+                    element_class = element.class_name()
+                    if element_class != criteria['class_name']:
+                        return False
+                except Exception:
+                    # Si no podemos obtener la clase pero lo requerimos, no coincide
+                    return False
+            
+            # Si llegamos aquí, todos los criterios especificados coinciden
+            return True
+        except Exception as e:
+            logger.debug(f"Error verificando criterios: {e}")
+            return False
 
     def take_screenshot(self, path: str) -> bool:
         """

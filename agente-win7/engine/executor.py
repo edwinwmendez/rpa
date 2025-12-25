@@ -252,17 +252,85 @@ class WorkflowExecutor:
             for node in false_nodes:
                 self._execute_node(node)
 
+    # ==================== UTILIDADES DE SELECTOR ====================
+    
+    def _parse_selector(self, selector: Any) -> Dict[str, Any]:
+        """
+        Parsea un selector a formato dict para DesktopEngine.
+        
+        Soporta múltiples formatos:
+        - String: "auto_id:btnGuardar" -> {"auto_id": "btnGuardar"}
+        - String: "name:Aceptar|control_type:Button|found_index:0" -> {"title": "Aceptar", "control_type": "Button", "found_index": 0}
+        - String: "coordinates:350,240" -> {"coordinates": [350, 240]}
+        - Dict: Ya está en formato correcto -> se retorna tal cual
+        
+        Args:
+            selector: Selector en formato string o dict
+            
+        Returns:
+            Dict con criterios de búsqueda para DesktopEngine
+        """
+        # Si ya es un dict, retornarlo
+        if isinstance(selector, dict):
+            return selector
+        
+        # Si es string, parsearlo
+        if isinstance(selector, str):
+            selector_dict = {}
+            
+            # Caso especial: coordinates
+            if selector.startswith('coordinates:'):
+                coords_str = selector.replace('coordinates:', '')
+                try:
+                    x, y = map(int, coords_str.split(','))
+                    return {'coordinates': [x, y]}
+                except ValueError:
+                    logger.warning(f"Formato de coordenadas inválido: {selector}")
+                    return {}
+            
+            # Parsear formato "tipo:valor|tipo2:valor2"
+            parts = selector.split('|')
+            for part in parts:
+                if ':' in part:
+                    key, value = part.split(':', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    
+                    # Mapear keys del selector a keys de DesktopEngine
+                    if key == 'auto_id':
+                        selector_dict['auto_id'] = value
+                    elif key == 'name':
+                        selector_dict['title'] = value  # DesktopEngine usa 'title' no 'name'
+                    elif key == 'class_name':
+                        selector_dict['class_name'] = value
+                    elif key == 'control_type':
+                        selector_dict['control_type'] = value
+                    elif key == 'found_index':
+                        # found_index se maneja después si hay múltiples elementos
+                        try:
+                            selector_dict['found_index'] = int(value)
+                        except ValueError:
+                            pass
+            
+            return selector_dict
+        
+        # Tipo desconocido
+        logger.warning(f"Tipo de selector no soportado: {type(selector)}")
+        return {}
+
     # ==================== ACCIONES ====================
 
     def _action_click(self, params: Dict[str, Any]) -> None:
         """Acción: Click en elemento"""
-        selector = params.get('selector', {})
+        selector_raw = params.get('selector', {})
+        selector = self._parse_selector(selector_raw)
         self._log(f"Click en: {selector}")
         self.desktop.click(selector)
 
     def _action_type(self, params: Dict[str, Any]) -> None:
         """Acción: Escribir texto"""
-        selector = params.get('selector', {})
+        selector_raw = params.get('selector', {})
+        selector = self._parse_selector(selector_raw)
         text = params.get('text', '')
 
         # Reemplazar variables
@@ -281,14 +349,16 @@ class WorkflowExecutor:
             time.sleep(seconds)
 
         elif wait_type == 'element':
-            selector = params.get('selector', {})
+            selector_raw = params.get('selector', {})
+            selector = self._parse_selector(selector_raw)
             timeout = params.get('timeout', 30)
             self._log(f"Esperar elemento: {selector}")
             self.desktop.wait_for_element(selector, timeout=timeout)
 
     def _action_read_text(self, params: Dict[str, Any]) -> None:
         """Acción: Leer texto de elemento"""
-        selector = params.get('selector', {})
+        selector_raw = params.get('selector', {})
+        selector = self._parse_selector(selector_raw)
         var_name = params.get('variableName', 'text')
 
         text = self.desktop.read_text(selector)

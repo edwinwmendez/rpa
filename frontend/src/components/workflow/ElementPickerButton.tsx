@@ -3,38 +3,37 @@ import { useState } from 'react';
 import { Target } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ElementPickerModal } from './ElementPickerModal';
-import { agentClient } from '../../lib/agentClient';
 
 interface ElementPickerButtonProps {
+  /** Callback cuando se captura un elemento */
   onElementSelected: (selector: string) => void;
+  /** Modo de captura: 'desktop' o 'web' */
   mode?: 'desktop' | 'web';
+  /** Selector actual (se muestra en el modal) */
   currentSelector?: string;
+  /** Deshabilitar el botón */
+  disabled?: boolean;
 }
 
 export function ElementPickerButton({
   onElementSelected,
   mode = 'desktop',
   currentSelector,
+  disabled = false,
 }: ElementPickerButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleStartPicker = async () => {
-    try {
-      setIsStarting(true);
-      await agentClient.startElementPicker(mode);
-      setIsOpen(true);
-    } catch (error) {
-      console.error('Error iniciando element picker:', error);
-      alert('No se pudo iniciar el selector de elementos. Asegúrate de que el agente esté conectado.');
-    } finally {
-      setIsStarting(false);
-    }
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   const handleElementCaptured = (selector: string) => {
     onElementSelected(selector);
-    setIsOpen(false);
+    setIsModalOpen(false);
   };
 
   return (
@@ -43,23 +42,20 @@ export function ElementPickerButton({
         type="button"
         variant="outline"
         size="icon"
-        onClick={handleStartPicker}
-        disabled={isStarting}
+        onClick={handleOpenModal}
+        disabled={disabled}
         title="Seleccionar elemento en la aplicación"
       >
         <Target className="h-4 w-4" />
       </Button>
 
-      {isOpen && (
         <ElementPickerModal
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
           onElementCaptured={handleElementCaptured}
           mode={mode}
           currentSelector={currentSelector}
         />
-      )}
     </>
   );
 }
-
