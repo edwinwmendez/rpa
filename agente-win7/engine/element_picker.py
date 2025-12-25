@@ -196,10 +196,12 @@ class ElementPicker:
         self._kernel32 = ctypes.windll.kernel32
         
         # Desktop para pywinauto (UIA como primario, win32 como fallback)
-        self._desktop_uia = Desktop(backend='uia')
+        # Windows 7: Solo usar win32 backend (UIA falla constantemente)
+        # No inicializar UIA para evitar cientos de errores en logs
+        self._desktop_uia = None
         self._desktop_win32 = Desktop(backend='win32')
         
-        logger.info("ElementPicker inicializado")
+        logger.info("ElementPicker inicializado (Windows 7 - solo win32 backend)")
     
     # ==================== API PÚBLICA ====================
     
@@ -419,8 +421,7 @@ class ElementPicker:
         """
         Obtiene el elemento UI bajo las coordenadas especificadas.
         
-        Intenta primero con backend UIA (más moderno), luego fallback a win32
-        (mejor compatibilidad con aplicaciones antiguas de Windows 7).
+        Windows 7: Solo usa win32 backend (UIA no funciona correctamente).
         
         Args:
             x: Coordenada X del mouse
@@ -429,25 +430,15 @@ class ElementPicker:
         Returns:
             Elemento UIAWrapper o None
         """
-        # Intento 1: Backend UIA (preferido para apps modernas)
-        element = None
+        # Windows 7: Solo usar win32 backend directamente
+        # UIA falla constantemente en Windows 7, no intentarlo
         try:
-            element = self._desktop_uia.from_point(x, y)
+            element = self._desktop_win32.from_point(x, y)
             if element:
                 return element
-        except Exception as e:
-            logger.debug("UIA backend falló en (%d, %d): %s", x, y, e)
-        
-        # Intento 2: Fallback a win32 (mejor para apps antiguas Win7)
-        # Solo intentar si UIA no retornó elemento (None o exception)
-        if not element:
-            try:
-                element = self._desktop_win32.from_point(x, y)
-                if element:
-                    logger.debug("Usando win32 backend para elemento en (%d, %d)", x, y)
-                    return element
-            except Exception as e:
-                logger.debug("win32 backend también falló: %s", e)
+        except Exception:
+            # Ignorar errores silenciosamente - son comunes en Windows 7
+            pass
         
         return None
     
