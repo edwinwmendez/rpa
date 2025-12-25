@@ -324,7 +324,8 @@ class ElementPicker:
             # Loop de detección de elementos
             loop_count = 0
             last_update_time = 0
-            update_interval = 0.1  # Actualizar overlay máximo cada 100ms (reducir access violations)
+            update_interval = 0.2  # Actualizar overlay cada 200ms (reducir access violations)
+            last_element_pos = None  # Trackear última posición para evitar accesos innecesarios
             
             while not self._stop_event.is_set():
                 try:
@@ -333,54 +334,52 @@ class ElementPicker:
                     # Obtener posición del mouse
                     point = POINT()
                     self._user32.GetCursorPos(ctypes.byref(point))
+                    current_pos = (point.x, point.y)
                     
-                    # Solo intentar obtener elemento si ha pasado el intervalo (throttling)
-                    should_update = (current_time - last_update_time) >= update_interval
+                    # Solo intentar obtener elemento si ha pasado el intervalo Y cambió la posición
+                    should_update = ((current_time - last_update_time) >= update_interval and 
+                                    current_pos != last_element_pos)
                     
                     if should_update:
+                        last_element_pos = current_pos
                         # Obtener elemento bajo el cursor
                         element = self._get_element_at_point(point.x, point.y)
-                    else:
-                        element = None  # No actualizar en esta iteración
-                    
-                    if element:
-                        # Obtener rectángulo del elemento con validación
-                        try:
-                            # Validar que el elemento sea válido antes de acceder
-                            if hasattr(element, 'rectangle'):
+                        
+                        if element:
+                            # Intentar obtener rectángulo SOLO UNA VEZ con protección completa
+                            new_rect = None
+                            try:
+                                # Acceso seguro a rectangle() - puede fallar en Windows 7
                                 rect = element.rectangle()
-                                # Validar que el rectángulo tenga valores válidos
-                                if hasattr(rect, 'left') and hasattr(rect, 'top') and hasattr(rect, 'right') and hasattr(rect, 'bottom'):
+                                if rect and hasattr(rect, 'left'):
                                     new_rect = (int(rect.left), int(rect.top), int(rect.right), int(rect.bottom))
                                     
                                     # Validar que el rectángulo sea razonable
-                                    if (new_rect[2] > new_rect[0] and new_rect[3] > new_rect[1] and 
-                                        new_rect[0] >= 0 and new_rect[1] >= 0 and
-                                        new_rect[2] < 10000 and new_rect[3] < 10000):
-                                        
-                                        # Solo actualizar overlay si el rectángulo cambió
-                                        if new_rect != self._current_element_rect:
-                                            self._current_element_rect = new_rect
-                                            self._update_overlay(new_rect)
-                                            last_update_time = current_time
-                                            if loop_count % 20 == 0:  # Log cada segundo aprox
-                                                logger.debug("Overlay actualizado: %s", new_rect)
-                        except (AttributeError, OSError, ctypes.ArgumentError) as e:
-                            # Errores de acceso a memoria - ignorar silenciosamente
-                            pass
-                        except Exception as e:
-                            # Otros errores - log solo si es crítico
-                            if loop_count % 100 == 0:  # Log cada 5 segundos aprox
-                                logger.debug("Error obteniendo rectángulo: %s", e)
-                    else:
-                        # Si no hay elemento, ocultar overlay
-                        if should_update and self._overlay_hwnd and self._current_element_rect:
-                            try:
-                                self._user32.ShowWindow(self._overlay_hwnd, 0)  # SW_HIDE
-                                self._current_element_rect = None
-                                last_update_time = current_time
+                                    if not (new_rect[2] > new_rect[0] and new_rect[3] > new_rect[1] and 
+                                            new_rect[0] >= 0 and new_rect[1] >= 0 and
+                                            new_rect[2] < 10000 and new_rect[3] < 10000):
+                                        new_rect = None
+                            except (AttributeError, OSError, ctypes.ArgumentError):
+                                # Errores de acceso a memoria - ignorar completamente
+                                new_rect = None
                             except Exception:
-                                pass
+                                # Cualquier otro error - ignorar
+                                new_rect = None
+                            
+                            # Solo actualizar overlay si tenemos un rectángulo válido y cambió
+                            if new_rect and new_rect != self._current_element_rect:
+                                self._current_element_rect = new_rect
+                                self._update_overlay(new_rect)
+                                last_update_time = current_time
+                        else:
+                            # Si no hay elemento, ocultar overlay
+                            if self._overlay_hwnd and self._current_element_rect:
+                                try:
+                                    self._user32.ShowWindow(self._overlay_hwnd, 0)  # SW_HIDE
+                                    self._current_element_rect = None
+                                    last_update_time = current_time
+                                except Exception:
+                                    pass
                     
                     # Procesar mensajes de Windows (necesario para hooks)
                     # Limitar a un máximo de mensajes por iteración para evitar saturación
@@ -541,16 +540,21 @@ class ElementPicker:
             
             # ==================== POSICIÓN Y GEOMETRÍA ====================
             
-            # Rectángulo del elemento
+            # Rectángulo del elemento (acceso seguro - puede fallar en Windows 7)
             try:
                 rect = element.rectangle()
-                properties['rectangle'] = {
-                    'left': rect.left,
-                    'top': rect.top,
-                    'right': rect.right,
-                    'bottom': rect.bottom
-                }
+                if rect and hasattr(rect, 'left'):
+                    properties['rectangle'] = {
+                        'left': int(rect.left),
+                        'top': int(rect.top),
+                        'right': int(rect.right),
+                        'bottom': int(rect.bottom)
+                    }
+            except (AttributeError, OSError, ctypes.ArgumentError):
+                # Errores de acceso a memoria - ignorar
+                pass
             except Exception:
+                # Otros errores - ignorar
                 pass
             
             # Coordenadas como fallback (crucial para apps problemáticas)
@@ -669,14 +673,20 @@ class ElementPicker:
             True si son el mismo elemento
         """
         try:
-            # Comparar por rectángulo (posición exacta)
+            # Comparar por rectángulo (posición exacta) - acceso seguro
             rect1 = elem1.rectangle()
             rect2 = elem2.rectangle()
+            
+            if not (rect1 and rect2 and hasattr(rect1, 'left') and hasattr(rect2, 'left')):
+                return False
             
             return (rect1.left == rect2.left and 
                     rect1.top == rect2.top and
                     rect1.right == rect2.right and 
                     rect1.bottom == rect2.bottom)
+        except (AttributeError, OSError, ctypes.ArgumentError):
+            # Errores de acceso - asumir que no son el mismo
+            return False
         except Exception:
             return False
     
@@ -771,16 +781,23 @@ class ElementPicker:
             Screenshot en base64 o None si falla
         """
         try:
+            # Acceso seguro a rectangle() - puede fallar en Windows 7
             rect = element.rectangle()
+            if not rect or not hasattr(rect, 'left'):
+                return None
             
             # Agregar un pequeño margen
             margin = 5
             bbox = (
-                max(0, rect.left - margin),
-                max(0, rect.top - margin),
-                rect.right + margin,
-                rect.bottom + margin
+                max(0, int(rect.left) - margin),
+                max(0, int(rect.top) - margin),
+                int(rect.right) + margin,
+                int(rect.bottom) + margin
             )
+            
+            # Validar bbox
+            if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
+                return None
             
             # Capturar región
             screenshot = ImageGrab.grab(bbox=bbox)
@@ -797,8 +814,12 @@ class ElementPicker:
             
             return base64.b64encode(buffer.getvalue()).decode('utf-8')
             
+        except (AttributeError, OSError, ctypes.ArgumentError):
+            # Errores de acceso a memoria - ignorar
+            return None
         except Exception as e:
-            logger.error("Error capturando screenshot: %s", e)
+            # Otros errores - log solo si es crítico
+            logger.debug("Error capturando screenshot: %s", e)
             return None
     
     # ==================== OVERLAY VISUAL ====================
