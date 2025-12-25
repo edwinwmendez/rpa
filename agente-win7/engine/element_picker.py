@@ -96,10 +96,10 @@ class WNDCLASSW(ctypes.Structure):
         ("lpfnWndProc", ctypes.c_void_p),
         ("cbClsExtra", ctypes.c_int),
         ("cbWndExtra", ctypes.c_int),
-        ("hInstance", ctypes.wintypes.HINSTANCE),
-        ("hIcon", ctypes.wintypes.HICON),
-        ("hCursor", ctypes.wintypes.HCURSOR),
-        ("hbrBackground", ctypes.wintypes.HBRUSH),
+        ("hInstance", ctypes.wintypes.HANDLE),  # HINSTANCE es un HANDLE
+        ("hIcon", ctypes.wintypes.HANDLE),      # HICON es un HANDLE
+        ("hCursor", ctypes.wintypes.HANDLE),    # HCURSOR es un HANDLE
+        ("hbrBackground", ctypes.wintypes.HANDLE),  # HBRUSH es un HANDLE
         ("lpszMenuName", ctypes.c_wchar_p),
         ("lpszClassName", ctypes.c_wchar_p)
     ]

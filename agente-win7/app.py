@@ -431,8 +431,12 @@ def start_picker():
             }), 500
 
     except Exception as e:
-        logger.error(f"Error iniciando element picker: {e}")
-        return jsonify({'status': 'error', 'error': str(e)}), 500
+        logger.error(f"Error iniciando element picker: {e}", exc_info=True)
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'details': repr(e) if hasattr(e, '__repr__') else None
+        }), 500
 
 
 @app.route('/picker/status', methods=['GET'])
