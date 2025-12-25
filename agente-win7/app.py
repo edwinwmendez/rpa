@@ -33,6 +33,8 @@ CORS(app, origins=[
     'http://localhost:5173',        # Vite dev server
     'http://10.36.238.114:3000',    # MacBook en red local
     'http://10.36.238.114:5173',    # MacBook con puerto alternativo
+    'http://10.36.238.184:3000',    # Windows 7 (si se accede desde ahí)
+    'http://10.36.238.184:5173',    # Windows 7 con puerto alternativo
     'http://127.0.0.1:3000',        # Localhost alternativo
     'http://127.0.0.1:5173',        # Localhost alternativo
     'https://*.web.app',            # Firebase Hosting
