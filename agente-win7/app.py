@@ -27,9 +27,14 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Configurar CORS para permitir conexiones desde frontend
+# En desarrollo, permitir cualquier origen de la red local (10.x.x.x, 192.168.x.x, etc.)
 CORS(app, origins=[
     'http://localhost:3000',        # Desarrollo local
     'http://localhost:5173',        # Vite dev server
+    'http://10.36.238.114:3000',    # MacBook en red local
+    'http://10.36.238.114:5173',    # MacBook con puerto alternativo
+    'http://127.0.0.1:3000',        # Localhost alternativo
+    'http://127.0.0.1:5173',        # Localhost alternativo
     'https://*.web.app',            # Firebase Hosting
     'https://*.firebaseapp.com'    # Firebase Hosting alternativo
 ], supports_credentials=True)
@@ -413,10 +418,10 @@ def start_picker():
         success = element_picker.start(mode=mode)
         
         if success:
-            return jsonify({
-                'status': 'started',
+        return jsonify({
+            'status': 'started',
                 'mode': mode
-            }), 200
+        }), 200
         else:
             return jsonify({
                 'status': 'error',
@@ -736,7 +741,9 @@ if __name__ == '__main__':
     print()
 
     try:
-        app.run(host='127.0.0.1', port=5000, debug=False, threaded=True)
+        # Escuchar en todas las interfaces (0.0.0.0) para permitir conexiones desde otras máquinas en la red
+        # También funciona con localhost para conexiones locales
+        app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
     except KeyboardInterrupt:
         print("\n\n🛑 Servidor detenido por usuario")
         logger.info("Servidor detenido")
