@@ -1,9 +1,9 @@
 (venv) PS C:\Users\Planillas\Desktop\rpa\agente-win7> python app.py
-2025-12-25 01:21:07,869 - engine.desktop - INFO - DesktopEngine inicializado (backend: uia, timeout: 30s)
-2025-12-25 01:21:07,869 - engine.excel - INFO - ExcelEngine inicializado con pandas
-2025-12-25 01:21:07,869 - engine.executor - INFO - WorkflowExecutor inicializado (Desktop + Excel)
-2025-12-25 01:21:07,869 - engine.element_picker - INFO - ElementPicker inicializado
-2025-12-25 01:21:07,869 - __main__ - INFO - ✅ Motores de automatización inicializados correctamente
+2025-12-25 01:24:57,611 - engine.desktop - INFO - DesktopEngine inicializado (backend: uia, timeout: 30s)
+2025-12-25 01:24:57,611 - engine.excel - INFO - ExcelEngine inicializado con pandas
+2025-12-25 01:24:57,611 - engine.executor - INFO - WorkflowExecutor inicializado (Desktop + Excel)
+2025-12-25 01:24:57,611 - engine.element_picker - INFO - ElementPicker inicializado
+2025-12-25 01:24:57,611 - __main__ - INFO - ✅ Motores de automatización inicializados correctamente
 ======================================================================
 🤖 Agente RPA - Windows 7 (Versión Ligera)
 ======================================================================
@@ -19,147 +19,116 @@ Servidor: http://localhost:5000
 
  * Serving Flask app 'app'
  * Debug mode: off
-2025-12-25 01:21:07,900 - werkzeug - INFO - ←[31m←[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.←[0m
+2025-12-25 01:24:57,642 - werkzeug - INFO - ←[31m←[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.←[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
  * Running on http://10.36.238.184:5000
-2025-12-25 01:21:07,900 - werkzeug - INFO - ←[33mPress CTRL+C to quit←[0m
-2025-12-25 01:21:13,412 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:13] "OPTIONS /picker/start HTTP/1.1" 200 -
-2025-12-25 01:21:13,459 - __main__ - INFO - Iniciando element picker en modo: desktop
-2025-12-25 01:21:13,556 - engine.element_picker - INFO - Iniciando picker loop...
-2025-12-25 01:21:13,557 - engine.element_picker - INFO - Instalando hooks de teclado y mouse...
-2025-12-25 01:21:13,557 - engine.element_picker - INFO - Preparando callbacks de hooks...
-2025-12-25 01:21:13,557 - engine.element_picker - INFO - Instalando keyboard hook...
-2025-12-25 01:21:13,557 - engine.element_picker - INFO - Instalando mouse hook...
-2025-12-25 01:21:13,558 - engine.element_picker - INFO - ✅ Hooks instalados correctamente (keyboard: 96731363, mouse: 12583651)
-2025-12-25 01:21:13,558 - engine.element_picker - INFO - Hooks instalados correctamente. Overlay activo.
-2025-12-25 01:21:13,561 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:13,562 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:13,556 - engine.element_picker - INFO - ElementPicker iniciado en modo: desktop
-2025-12-25 01:21:13,565 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:13] "POST /picker/start HTTP/1.1" 200 -
-2025-12-25 01:21:14,125 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:14] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:14,625 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:14] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:15,465 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:15,466 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:15,606 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:15] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:16,105 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:16] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:16,645 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:16,645 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:16,720 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:16] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:17,123 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:17] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:17,625 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:17] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:17,785 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:17] "GET /health HTTP/1.1" 200 -
-2025-12-25 01:21:18,121 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:18] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:18,623 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:18] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:18,847 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:18,847 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:18,953 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:18,953 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:19,058 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:19,058 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:19,124 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:19] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:19,165 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:19,165 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:19,271 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:19,272 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:19,535 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:19,535 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:19,622 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:19] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:20,132 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:20] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:20,585 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:20,585 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:20,624 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:20] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:20,748 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:20,748 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:21,124 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:21] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:21,491 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:21,492 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:21,624 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:21] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:21,652 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:21,653 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:22,123 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:22] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:22,606 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:22,606 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:22,623 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:22] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:22,762 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:22,763 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:22,820 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:22,821 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:22,958 - engine.element_picker - INFO - Creando ventana overlay...
-2025-12-25 01:21:22,959 - engine.element_picker - ERROR - ❌ Error creando overlay: incompatible types, WinFunctionType instance instead of c_void_p instance
-Traceback (most recent call last):
-  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 811, in _create_overlay
-    wnd_class.lpfnWndProc = wnd_proc
-TypeError: incompatible types, WinFunctionType instance instead of c_void_p instance
-2025-12-25 01:21:23,124 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:23] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:23,629 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:23] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:24,124 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:24] "GET /picker/status HTTP/1.1" 200 -
-2025-12-25 01:21:24,489 - engine.element_picker - INFO - Picker loop terminado
-2025-12-25 01:21:24,489 - engine.element_picker - INFO - Limpiando recursos del picker...
-2025-12-25 01:21:24,490 - engine.element_picker - INFO - ElementPicker detenido
-2025-12-25 01:21:24,490 - __main__ - INFO - Element picker detenido
-2025-12-25 01:21:24,491 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:21:24] "POST /picker/stop HTTP/1.1" 200 -
+2025-12-25 01:24:57,642 - werkzeug - INFO - ←[33mPress CTRL+C to quit←[0m
+2025-12-25 01:25:00,155 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:00] "GET /health HTTP/1.1" 200 -
+2025-12-25 01:25:02,093 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:02] "OPTIONS /picker/start HTTP/1.1" 200 -
+2025-12-25 01:25:02,136 - __main__ - INFO - Iniciando element picker en modo: desktop
+2025-12-25 01:25:02,252 - engine.element_picker - INFO - Iniciando picker loop...
+2025-12-25 01:25:02,252 - engine.element_picker - INFO - Instalando hooks de teclado y mouse...
+2025-12-25 01:25:02,253 - engine.element_picker - INFO - Preparando callbacks de hooks...
+2025-12-25 01:25:02,253 - engine.element_picker - INFO - Instalando keyboard hook...
+2025-12-25 01:25:02,253 - engine.element_picker - INFO - Instalando mouse hook...
+2025-12-25 01:25:02,253 - engine.element_picker - INFO - ✅ Hooks instalados correctamente (keyboard: 6292385, mouse: 95158859)
+2025-12-25 01:25:02,254 - engine.element_picker - INFO - Hooks instalados correctamente. Overlay activo.
+2025-12-25 01:25:02,257 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:25:02,252 - engine.element_picker - INFO - ElementPicker iniciado en modo: desktop
+2025-12-25 01:25:02,259 - engine.element_picker - INFO - ✅ Overlay creado exitosamente: 2687546
+2025-12-25 01:25:02,260 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:02] "POST /picker/start HTTP/1.1" 200 -
+2025-12-25 01:25:02,270 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:02,383 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:02,484 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:02,584 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:02,686 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:02,789 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:02,824 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:02] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:02,890 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:02,992 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:03,093 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:03,195 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:03,296 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:03,328 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:03] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:03,399 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:03,517 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:04,308 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:04,345 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:04] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:04,613 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:04,908 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:05,179 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:05,391 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:05,624 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,141 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,249 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:06] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:06,305 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:06] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:06,336 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,359 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:06] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:06,442 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,545 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,650 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,755 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,822 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:06] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:06,860 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:06,963 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,067 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,167 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,268 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,328 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:07] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:07,369 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,469 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,572 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,673 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,775 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,825 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:07] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:07,876 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:07,978 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,082 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,182 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,284 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,326 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:08] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:08,386 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,489 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,592 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,697 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,797 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:08,825 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:08] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:08,900 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,007 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,109 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,210 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,312 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,327 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:09] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:09,414 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,515 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,618 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,719 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,824 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:09,827 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:09] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:09,930 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,031 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,132 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,251 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,332 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:10] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:10,357 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,461 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,568 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,673 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,780 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,827 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:10] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:10,882 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:10,986 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:11,090 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:11,195 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:11,295 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:11,328 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:11] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:25:11,398 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:11,499 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:11,611 - engine.element_picker - WARNING - Error en picker loop: exception: access violation writing 0x00000014
+2025-12-25 01:25:11,712 - engine.element_picker - INFO - Picker loop terminado
+2025-12-25 01:25:11,712 - engine.element_picker - INFO - Limpiando recursos del picker...
+2025-12-25 01:25:11,718 - engine.element_picker - INFO - ElementPicker detenido
+2025-12-25 01:25:11,718 - __main__ - INFO - Element picker detenido
+2025-12-25 01:25:11,719 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:11] "POST /picker/stop HTTP/1.1" 200 -
+2025-12-25 01:25:19,396 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:25:19] "GET /health HTTP/1.1" 200 -
