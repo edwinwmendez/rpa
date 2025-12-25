@@ -12,12 +12,35 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 # Configurar logging
+# Crear archivo de log de texto legible (se sobrescribe en cada ejecución)
+log_file = 'agente_win7_output.txt'
+with open(log_file, 'w', encoding='utf-8') as f:
+    f.write('=' * 70 + '\n')
+    f.write('Agente RPA - Windows 7 - Log de Ejecución\n')
+    f.write('=' * 70 + '\n\n')
+
+# Handler para archivo de texto legible (solo INFO y superiores, sin formato complejo)
+file_handler = logging.FileHandler(log_file, encoding='utf-8', mode='a')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+# Handler para archivo de log técnico (formato completo)
+technical_log_handler = logging.FileHandler('agente_win7.log', encoding='utf-8')
+technical_log_handler.setLevel(logging.DEBUG)
+technical_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+
+# Handler para consola
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+# Configurar logging root
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG,
     handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('agente_win7.log', encoding='utf-8')
+        console_handler,
+        file_handler,
+        technical_log_handler
     ]
 )
 
@@ -732,19 +755,24 @@ def internal_error(error):
 # ==================== MAIN ====================
 
 if __name__ == '__main__':
-    print("=" * 70)
-    print("🤖 Agente RPA - Windows 7 (Versión Ligera)")
-    print("=" * 70)
-    print(f"Python: {platform.python_version()}")
-    print(f"OS: {platform.system()} {platform.release()}")
-    print()
-    print("✅ Características:")
-    print("   - Desktop automation (pywinauto)")
-    print("   - Excel/CSV processing (pandas)")
-    print()
-    print("Servidor: http://localhost:5000")
-    print("=" * 70)
-    print()
+    startup_msg = f"""
+{'=' * 70}
+🤖 Agente RPA - Windows 7 (Versión Ligera)
+{'=' * 70}
+Python: {platform.python_version()}
+OS: {platform.system()} {platform.release()}
+
+✅ Características:
+   - Desktop automation (pywinauto)
+   - Excel/CSV processing (pandas)
+
+Servidor: http://localhost:5000
+Logs guardados en: agente_win7_output.txt
+{'=' * 70}
+
+"""
+    print(startup_msg)
+    logger.info(startup_msg.strip())
 
     try:
         # Escuchar en todas las interfaces (0.0.0.0) para permitir conexiones desde otras máquinas en la red
