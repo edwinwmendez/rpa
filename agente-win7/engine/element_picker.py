@@ -89,11 +89,20 @@ class KBDLLHOOKSTRUCT(ctypes.Structure):
     ]
 
 
+# Definir el tipo de función para el procedimiento de ventana
+WNDPROC = ctypes.WINFUNCTYPE(
+    ctypes.c_long,
+    ctypes.wintypes.HWND,
+    ctypes.c_uint,
+    ctypes.wintypes.WPARAM,
+    ctypes.wintypes.LPARAM
+)
+
 class WNDCLASSW(ctypes.Structure):
     """Estructura WNDCLASSW para Windows (Unicode)"""
     _fields_ = [
         ("style", ctypes.wintypes.UINT),
-        ("lpfnWndProc", ctypes.c_void_p),
+        ("lpfnWndProc", WNDPROC),  # Tipo de función correcto
         ("cbClsExtra", ctypes.c_int),
         ("cbWndExtra", ctypes.c_int),
         ("hInstance", ctypes.wintypes.HANDLE),  # HINSTANCE es un HANDLE
@@ -796,14 +805,8 @@ class ElementPicker:
             # Registrar clase de ventana
             wnd_class_name = "RPAElementPickerOverlay"
             
-            # Crear callback para el procedimiento de ventana
-            wnd_proc = ctypes.WINFUNCTYPE(
-                ctypes.c_long,
-                ctypes.wintypes.HWND,
-                ctypes.c_uint,
-                ctypes.wintypes.WPARAM,
-                ctypes.wintypes.LPARAM
-            )(self._overlay_wnd_proc)
+            # Crear callback para el procedimiento de ventana usando el tipo definido
+            wnd_proc = WNDPROC(self._overlay_wnd_proc)
             
             # Crear estructura WNDCLASSW
             wnd_class = WNDCLASSW()
