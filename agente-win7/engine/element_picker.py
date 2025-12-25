@@ -89,6 +89,22 @@ class KBDLLHOOKSTRUCT(ctypes.Structure):
     ]
 
 
+class WNDCLASSW(ctypes.Structure):
+    """Estructura WNDCLASSW para Windows (Unicode)"""
+    _fields_ = [
+        ("style", ctypes.wintypes.UINT),
+        ("lpfnWndProc", ctypes.c_void_p),
+        ("cbClsExtra", ctypes.c_int),
+        ("cbWndExtra", ctypes.c_int),
+        ("hInstance", ctypes.wintypes.HINSTANCE),
+        ("hIcon", ctypes.wintypes.HICON),
+        ("hCursor", ctypes.wintypes.HCURSOR),
+        ("hbrBackground", ctypes.wintypes.HBRUSH),
+        ("lpszMenuName", ctypes.c_wchar_p),
+        ("lpszClassName", ctypes.c_wchar_p)
+    ]
+
+
 # ==================== CLASE PRINCIPAL ====================
 
 class ElementPicker:
@@ -780,17 +796,27 @@ class ElementPicker:
             # Registrar clase de ventana
             wnd_class_name = "RPAElementPickerOverlay"
             
-            wnd_class = ctypes.wintypes.WNDCLASSW()
-            wnd_class.lpfnWndProc = ctypes.WINFUNCTYPE(
+            # Crear callback para el procedimiento de ventana
+            wnd_proc = ctypes.WINFUNCTYPE(
                 ctypes.c_long,
                 ctypes.wintypes.HWND,
                 ctypes.c_uint,
                 ctypes.wintypes.WPARAM,
                 ctypes.wintypes.LPARAM
             )(self._overlay_wnd_proc)
+            
+            # Crear estructura WNDCLASSW
+            wnd_class = WNDCLASSW()
+            wnd_class.style = 0
+            wnd_class.lpfnWndProc = wnd_proc
+            wnd_class.cbClsExtra = 0
+            wnd_class.cbWndExtra = 0
             wnd_class.hInstance = self._kernel32.GetModuleHandleW(None)
-            wnd_class.lpszClassName = wnd_class_name
+            wnd_class.hIcon = None
+            wnd_class.hCursor = None
             wnd_class.hbrBackground = self._gdi32.CreateSolidBrush(COLOR_RED)
+            wnd_class.lpszMenuName = None
+            wnd_class.lpszClassName = wnd_class_name
             
             # Intentar registrar (puede fallar si ya existe)
             result = self._user32.RegisterClassW(ctypes.byref(wnd_class))
