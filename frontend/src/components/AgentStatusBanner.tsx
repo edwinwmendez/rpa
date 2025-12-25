@@ -36,7 +36,7 @@ export function AgentStatusBanner() {
                 ✅ Agente conectado
               </span>
               <span className="text-sm text-green-700 ml-2">
-                {status.os} • Python {status.python} • v{status.version}
+                {status.os?.system || status.os || 'Windows'} {status.os?.release || ''} • Python {status.python} • v{status.version}
               </span>
             </div>
           ) : (
