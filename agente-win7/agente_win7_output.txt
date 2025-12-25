@@ -472,3 +472,4 @@ Logs guardados en: agente_win7_output.txt
 2025-12-25 01:45:07,240 - INFO - Element picker detenido
 2025-12-25 01:45:07,240 - INFO - 10.36.238.184 - - [25/Dec/2025 01:45:07] "POST /picker/stop HTTP/1.1" 200 -
 2025-12-25 01:45:16,851 - INFO - 10.36.238.184 - - [25/Dec/2025 01:45:16] "GET /health HTTP/1.1" 200 -
+2025-12-25 01:45:47,673 - INFO - 10.36.238.184 - - [25/Dec/2025 01:45:47] "GET /health HTTP/1.1" 200 -
