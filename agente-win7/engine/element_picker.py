@@ -89,6 +89,18 @@ class KBDLLHOOKSTRUCT(ctypes.Structure):
     ]
 
 
+class MSG(ctypes.Structure):
+    """Estructura MSG para mensajes de Windows"""
+    _fields_ = [
+        ("hwnd", ctypes.wintypes.HWND),
+        ("message", ctypes.wintypes.UINT),
+        ("wParam", ctypes.wintypes.WPARAM),
+        ("lParam", ctypes.wintypes.LPARAM),
+        ("time", ctypes.wintypes.DWORD),
+        ("pt", POINT)
+    ]
+
+
 # Definir el tipo de función para el procedimiento de ventana
 WNDPROC = ctypes.WINFUNCTYPE(
     ctypes.c_long,
@@ -338,10 +350,18 @@ class ElementPicker:
                             self._user32.ShowWindow(self._overlay_hwnd, 0)  # SW_HIDE
                     
                     # Procesar mensajes de Windows (necesario para hooks)
-                    msg = ctypes.wintypes.MSG()
-                    while self._user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):  # PM_REMOVE
-                        self._user32.TranslateMessage(ctypes.byref(msg))
-                        self._user32.DispatchMessageW(ctypes.byref(msg))
+                    # Limitar a un máximo de mensajes por iteración para evitar saturación
+                    msg = MSG()
+                    msg_count = 0
+                    max_messages = 10  # Máximo de mensajes por iteración
+                    while msg_count < max_messages and self._user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):  # PM_REMOVE
+                        try:
+                            self._user32.TranslateMessage(ctypes.byref(msg))
+                            self._user32.DispatchMessageW(ctypes.byref(msg))
+                            msg_count += 1
+                        except Exception:
+                            # Si hay error procesando mensaje, continuar
+                            break
                     
                     # Pequeña pausa para no saturar CPU
                     time.sleep(0.05)
@@ -962,14 +982,18 @@ class ElementPicker:
     def _process_messages(self) -> None:
         """Procesa mensajes de Windows para los hooks."""
         try:
-            msg = ctypes.wintypes.MSG()
+            msg = MSG()
             while not self._stop_event.is_set():
                 # PeekMessage sin bloquear
                 if self._user32.PeekMessageW(
                     ctypes.byref(msg), None, 0, 0, 1  # PM_REMOVE
                 ):
-                    self._user32.TranslateMessage(ctypes.byref(msg))
-                    self._user32.DispatchMessageW(ctypes.byref(msg))
+                    try:
+                        self._user32.TranslateMessage(ctypes.byref(msg))
+                        self._user32.DispatchMessageW(ctypes.byref(msg))
+                    except Exception:
+                        # Si hay error, continuar sin bloquear
+                        pass
                 else:
                     time.sleep(0.01)
         except Exception as e:
