@@ -1,107 +1,151 @@
-Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
-firebase.ts? [sm]:45 
-        
-      
-        
-        
-      
-        
-      
-       
-        
-       POST https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyBn4GJP3LPZQBSzgYauqGh8UtLkGFbiINQ net::ERR_CONNECTION_CLOSED
-(anónimo) @ index.ts:189
-await in (anónimo) (asincrónica)
-_performFetchWithErrorHandling @ index.ts:206
-_performApiRequest @ index.ts:146
-getAccountInfo @ account.ts:93
-_reloadWithoutSaving @ reload.ts:36
-await in _reloadWithoutSaving (asincrónica)
-reloadAndSetCurrentUserOrClear @ auth_impl.ts:383
-initializeCurrentUser @ auth_impl.ts:320
-await in initializeCurrentUser (asincrónica)
-(anónimo) @ auth_impl.ts:189
-Promise.then (asincrónica)
-queue @ auth_impl.ts:804
-_initializeWithPersistence @ auth_impl.ts:163
-_initializeAuthInstance @ initialize.ts:86
-(anónimo) @ register.ts:94
-getOrInitializeService @ provider.ts:318
-initialize @ provider.ts:242
-initializeAuth @ initialize.ts:66
-getAuth @ index.ts:83
-(anónimo) @ firebase.ts? [sm]:45
-Show 16 more frames
-authStore.ts? [sm]:45 Perfil encontrado para usuario: xUF6NiR4DQbCuXDaFU1wQXfAQXy2
-react-dom-client.development.js:6099 
-        
-       Uncaught Error: Objects are not valid as a React child (found: object with keys {machine, release, system, version}). If you meant to render a collection of children, use an array instead.
-    at throwOnInvalidObjectTypeImpl (react-dom-client.development.js:6099:13)
-    at throwOnInvalidObjectType (react-dom-client.development.js:6113:11)
-    at createChild (react-dom-client.development.js:6401:11)
-    at reconcileChildrenArray (react-dom-client.development.js:6670:25)
-    at reconcileChildFibersImpl (react-dom-client.development.js:6993:30)
-    at react-dom-client.development.js:7098:33
-    at reconcileChildren (react-dom-client.development.js:9702:13)
-    at beginWork (react-dom-client.development.js:12049:13)
-    at runWithFiberInDEV (react-dom-client.development.js:871:30)
-    at performUnitOfWork (react-dom-client.development.js:17641:22)
-throwOnInvalidObjectTypeImpl @ react-dom-client.development.js:6099
-throwOnInvalidObjectType @ react-dom-client.development.js:6113
-createChild @ react-dom-client.development.js:6401
-reconcileChildrenArray @ react-dom-client.development.js:6670
-reconcileChildFibersImpl @ react-dom-client.development.js:6993
-(anónimo) @ react-dom-client.development.js:7098
-reconcileChildren @ react-dom-client.development.js:9702
-beginWork @ react-dom-client.development.js:12049
-runWithFiberInDEV @ react-dom-client.development.js:871
-performUnitOfWork @ react-dom-client.development.js:17641
-workLoopSync @ react-dom-client.development.js:17469
-renderRootSync @ react-dom-client.development.js:17450
-performWorkOnRoot @ react-dom-client.development.js:16583
-performSyncWorkOnRoot @ react-dom-client.development.js:18972
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18814
-processRootScheduleInMicrotask @ react-dom-client.development.js:18853
-(anónimo) @ react-dom-client.development.js:18991
-<span> (asincrónica)
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
-AgentStatusBanner @ AgentStatusBanner.tsx? [sm]:47
-react_stack_bottom_frame @ react-dom-client.development.js:25904
-renderWithHooksAgain @ react-dom-client.development.js:7762
-renderWithHooks @ react-dom-client.development.js:7674
-updateFunctionComponent @ react-dom-client.development.js:10166
-beginWork @ react-dom-client.development.js:11778
-runWithFiberInDEV @ react-dom-client.development.js:871
-performUnitOfWork @ react-dom-client.development.js:17641
-workLoopSync @ react-dom-client.development.js:17469
-renderRootSync @ react-dom-client.development.js:17450
-performWorkOnRoot @ react-dom-client.development.js:16504
-performSyncWorkOnRoot @ react-dom-client.development.js:18972
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18814
-processRootScheduleInMicrotask @ react-dom-client.development.js:18853
-(anónimo) @ react-dom-client.development.js:18991
-<AgentStatusBanner> (asincrónica)
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
-App @ App.tsx? [sm]:43
-react_stack_bottom_frame @ react-dom-client.development.js:25904
-renderWithHooksAgain @ react-dom-client.development.js:7762
-renderWithHooks @ react-dom-client.development.js:7674
-updateFunctionComponent @ react-dom-client.development.js:10166
-beginWork @ react-dom-client.development.js:11778
-runWithFiberInDEV @ react-dom-client.development.js:871
-performUnitOfWork @ react-dom-client.development.js:17641
-workLoopSync @ react-dom-client.development.js:17469
-renderRootSync @ react-dom-client.development.js:17450
-performWorkOnRoot @ react-dom-client.development.js:16504
-performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:18957
-performWorkUntilDeadline @ scheduler.development.js:45
-<App> (asincrónica)
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
-(anónimo) @ main.tsx? [sm]:8
-Show 46 more frames
-hook.js:608 
-        
-       An error occurred in the <span> component.
+(venv) PS C:\Users\Planillas\Desktop\rpa\agente-win7> python app.py
+2025-12-25 01:13:03,387 - engine.desktop - INFO - DesktopEngine inicializado (backend: uia, timeout: 30s)
+2025-12-25 01:13:03,388 - engine.excel - INFO - ExcelEngine inicializado con pandas
+2025-12-25 01:13:03,388 - engine.executor - INFO - WorkflowExecutor inicializado (Desktop + Excel)
+2025-12-25 01:13:03,388 - engine.element_picker - INFO - ElementPicker inicializado
+2025-12-25 01:13:03,389 - __main__ - INFO - ✅ Motores de automatización inicializados correctamente
+======================================================================
+🤖 Agente RPA - Windows 7 (Versión Ligera)
+======================================================================
+Python: 3.8.10
+OS: Windows 7
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+✅ Características:
+   - Desktop automation (pywinauto)
+   - Excel/CSV processing (pandas)
+
+Servidor: http://localhost:5000
+======================================================================
+
+ * Serving Flask app 'app'
+ * Debug mode: off
+2025-12-25 01:13:03,721 - werkzeug - INFO - ←[31m←[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.←[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.36.238.184:5000
+2025-12-25 01:13:03,721 - werkzeug - INFO - ←[33mPress CTRL+C to quit←[0m
+2025-12-25 01:13:06,740 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:06] "GET /health HTTP/1.1" 200 -
+2025-12-25 01:13:09,253 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:09] "OPTIONS /picker/start HTTP/1.1" 200 -
+2025-12-25 01:13:09,467 - __main__ - INFO - Iniciando element picker en modo: desktop
+2025-12-25 01:13:09,666 - engine.element_picker - INFO - Iniciando picker loop...
+2025-12-25 01:13:09,666 - engine.element_picker - INFO - Instalando hooks de teclado y mouse...
+2025-12-25 01:13:09,666 - engine.element_picker - INFO - Preparando callbacks de hooks...
+2025-12-25 01:13:09,666 - engine.element_picker - INFO - Instalando keyboard hook...
+2025-12-25 01:13:09,667 - engine.element_picker - INFO - Instalando mouse hook...
+2025-12-25 01:13:09,667 - engine.element_picker - INFO - ✅ Hooks instalados correctamente (keyboard: 10683205, mouse: 3343257)
+2025-12-25 01:13:09,668 - engine.element_picker - INFO - Hooks instalados correctamente. Overlay activo.
+2025-12-25 01:13:09,666 - engine.element_picker - INFO - ElementPicker iniciado en modo: desktop
+2025-12-25 01:13:09,669 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:09] "POST /picker/start HTTP/1.1" 200 -
+2025-12-25 01:13:10,247 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:10,248 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:11,646 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:11] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:12,678 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:12] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:13,680 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:13] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:14,081 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:14,109 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:14,122 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:14] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:14,418 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:14] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:14,916 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:14] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:15,420 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:15] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:15,915 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:15] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:16,417 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:16] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:16,916 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:16] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:17,165 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:17] "GET /health HTTP/1.1" 200 -
+2025-12-25 01:13:17,291 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:17,292 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:17,347 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:17,347 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:17,416 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:17] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:17,913 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:17] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:18,323 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:18,323 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:18,416 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:18] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:18,914 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:18] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:18,928 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:18,931 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:18,984 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:18,985 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:19,090 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:19,091 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:19,299 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:19,299 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:19,419 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:19] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:19,914 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:19] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:19,985 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:19,985 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:20,057 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:20,062 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:20,426 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:20] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:20,857 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:20,857 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:20,916 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:20] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:21,417 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:21] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:21,923 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:21,923 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:21,958 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:21] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:22,872 - engine.element_picker - INFO - Creando ventana overlay...
+2025-12-25 01:13:22,872 - engine.element_picker - ERROR - ❌ Error creando overlay: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+Traceback (most recent call last):
+  File "C:\Users\Planillas\Desktop\rpa\agente-win7\engine\element_picker.py", line 783, in _create_overlay
+    wnd_class = ctypes.wintypes.WNDCLASSW()
+AttributeError: module 'ctypes.wintypes' has no attribute 'WNDCLASSW'
+2025-12-25 01:13:22,944 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:22] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:23,428 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:23] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:23,913 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:23] "GET /picker/status HTTP/1.1" 200 -
+2025-12-25 01:13:24,192 - engine.element_picker - INFO - Picker loop terminado
+2025-12-25 01:13:24,192 - engine.element_picker - INFO - Limpiando recursos del picker...
+2025-12-25 01:13:24,193 - engine.element_picker - INFO - ElementPicker detenido
+2025-12-25 01:13:24,193 - __main__ - INFO - Element picker detenido
+2025-12-25 01:13:24,195 - werkzeug - INFO - 10.36.238.184 - - [25/Dec/2025 01:13:24] "POST /picker/stop HTTP/1.1" 200 -
