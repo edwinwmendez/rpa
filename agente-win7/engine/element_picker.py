@@ -38,7 +38,6 @@ WS_POPUP = 0x80000000
 WS_VISIBLE = 0x10000000
 
 # Layered window
-LWA_COLORKEY = 0x00000001
 LWA_ALPHA = 0x00000002
 
 # Colores
@@ -54,13 +53,10 @@ VK_ESCAPE = 0x1B
 
 # GDI
 PS_SOLID = 0
-SRCCOPY = 0x00CC0020
 
 # Mensajes
 WM_PAINT = 0x000F
-WM_CLOSE = 0x0010
 WM_DESTROY = 0x0002
-WM_QUIT = 0x0012
 
 
 # ==================== ESTRUCTURAS WIN32 ====================
@@ -195,10 +191,7 @@ class ElementPicker:
         self._gdi32 = ctypes.windll.gdi32
         self._kernel32 = ctypes.windll.kernel32
         
-        # Desktop para pywinauto (UIA como primario, win32 como fallback)
-        # Windows 7: Solo usar win32 backend (UIA falla constantemente)
-        # No inicializar UIA para evitar cientos de errores en logs
-        self._desktop_uia = None
+        # Desktop para pywinauto - Windows 7: Solo usar win32 backend
         self._desktop_win32 = Desktop(backend='win32')
         
         logger.info("ElementPicker inicializado (Windows 7 - solo win32 backend)")
@@ -322,7 +315,6 @@ class ElementPicker:
             logger.info("Hooks instalados correctamente. Overlay activo.")
             
             # Loop de detección de elementos
-            loop_count = 0
             last_update_time = 0
             update_interval = 0.2  # Actualizar overlay cada 200ms (reducir access violations)
             last_element_pos = None  # Trackear última posición para evitar accesos innecesarios
@@ -397,7 +389,6 @@ class ElementPicker:
                     
                     # Pequeña pausa para no saturar CPU
                     time.sleep(0.05)
-                    loop_count += 1
                     
                 except Exception as e:
                     logger.warning("Error en picker loop: %s", e)
@@ -1051,26 +1042,6 @@ class ElementPicker:
         except Exception as e:
             logger.error("Error instalando hooks: %s", e, exc_info=True)
             raise
-    
-    def _process_messages(self) -> None:
-        """Procesa mensajes de Windows para los hooks."""
-        try:
-            msg = MSG()
-            while not self._stop_event.is_set():
-                # PeekMessage sin bloquear
-                if self._user32.PeekMessageW(
-                    ctypes.byref(msg), None, 0, 0, 1  # PM_REMOVE
-                ):
-                    try:
-                        self._user32.TranslateMessage(ctypes.byref(msg))
-                        self._user32.DispatchMessageW(ctypes.byref(msg))
-                    except Exception:
-                        # Si hay error, continuar sin bloquear
-                        pass
-                else:
-                    time.sleep(0.01)
-        except Exception as e:
-            logger.debug("Error en message loop: %s", e)
     
     def _keyboard_hook_proc(self, nCode: int, wParam: int, lParam: int) -> int:
         """Callback para el hook de teclado."""
